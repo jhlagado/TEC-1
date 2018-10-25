@@ -959,7 +959,7 @@
 05AD   FF                           DB      0xFF   
 05AE   FF                           DB      0xFF   
 05AF   FF                           DB      0xFF   
-05B0   21 00 08                     LD      hl,STARTRAM     ;unfinished tape backup
+05B0   21 00 08                     LD      hl,STARTRAM     ;sequencer
 05B3   11 00 0B                     LD      de,0x0b00   
 05B6   7E           L5B6:           LD      a,(hl)   
 05B7   FE FF                        CP      0xff   
