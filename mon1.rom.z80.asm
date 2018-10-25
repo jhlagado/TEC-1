@@ -1,3 +1,10 @@
+*****************************************************************************************************
+*                                                                                                   *      
+*                      TEC-1 Monitor ROM (c) John Hardy 1983 - 2018                                 *    
+*                      Released under the GNU GENERAL PUBLIC LICENSE 3.0                            *
+*                                                                                                   *
+*****************************************************************************************************
+
 0000                STARTRAM:       EQU     0x800   
 0000                DISPLAY:        EQU     0x0ff1          ;display start (data part)
 0000                DISPLAY2:       EQU     0x0ff3          ;display address part offset
