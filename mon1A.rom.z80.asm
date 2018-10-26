@@ -1,7 +1,8 @@
 *****************************************************************************************************
 *                                                                                                   *      
-*                      TEC-1 Monitor ROM v1 (c) John Hardy 1983 - 2018                              *    
-*                      Released under the GNU GENERAL PUBLIC LICENSE 3.0                            *
+*                      TEC-1 Monitor ROM v1A (c) John Hardy 1983 - 2018                             *    
+*                      Released under the GNU GENERAL PUBLIC LICENSE 3.0                            * 
+*                      SEQUENCER at 0x05B0 by Ken Stone                                             *
 *                                                                                                   *
 *****************************************************************************************************
 
@@ -16,8 +17,18 @@
 0000                PORTDIGIT:      EQU     0x01            ;bits 0-5 select display digit
 0000                PORTSPKR:       EQU     0x01            ;bit 7 selects speaker
 0000                PORTSEGS:       EQU     0x02            ;bits 0-8 select display segments
+0000                PORTSLOW:       EQU     0x03            ;output port for slow sequencer
+0000                PORTFAST:       EQU     0x04            ;output port for fast sequencer
+                    
+                    SLOWSEQ:        EQU     0x0800          ;fast and slow sequencer data 
+                    FASTSEQ:        EQU     0x0b00          ;see SEQUENCER code
+                    ENDOFSEQ:       EQU     0xFF            ;end of sequence
+                    REPEATBANNER:   EQU     0x1E            ;repeat showing banner
+                    ENDOFBANNER:    EQU     0x1F            ;end of banner
+                    REPEATTUNE:     EQU     0x1E            ;repeat playing tune
+                    ENDOFTUNE:      EQU     0x1F            ;end of tune
 
-0000                                .ORG    0x0000   
+0000                                ORG    0x0000   
 0000   C3 F0 05                     JP      STARTMON   
 0003   FF                           DB      0xFF   
 0004   FF                           DB      0xFF   
@@ -102,7 +113,8 @@
 0065   FF                           DB      0xFF   
 0066                                                        ;n   on-maskable interrupt: read key from keyboard into i
 0066                                                        ;d   estroys a    BUG: fix bug to save a
-0066   DB 00        NMINT:          IN      a,(0x00)        ;input a from keyboard
+                    NMINT:          ORG     0x0066
+0066   DB 00                        IN      a,(0x00)        ;input a from keyboard
 0068   E6 1F                        AND     0x1f            ;mask lower 5 bits
 006A   ED 47                        LD      i,a             ;move to i register
 006C   C9                           RET                     ;BUG: should be RETN
@@ -227,6 +239,7 @@
 013A   FE FF                        CP      0xff   
 013C   C0                           RET     nz              ;if (i != NOKEY) return i
 013D   C3 31 01                     JP      GETKEY   
+
 0140                                                        ;subroutine: display each digit in turn
 0140                                                        ;destroys b, c, a
 0140   DD E5        SCANDISP:       PUSH    ix              ;save ix, ix == DISPLAY???
@@ -279,6 +292,7 @@
 0177   2B                           DEC     hl   
 0178   ED 57                        LD      a,i   
 017A   C9                           RET                     ;return (a=key)
+
 017B                                                        ;subroutine: getkey, check KEYFLAG
 017B                                                        ;    
 017B                                                        ;if ((KEYFLAG)==false) {
@@ -300,8 +314,11 @@
 018B   78                           LD      a,b             ;a = key
 018C   C9                           RET                     ;return a=key
 018D   00                           NOP         
+
 018E   0E 0A        BEEP:           LD      c,0x0a          ;c = 0A (10)
 0190   21 50 00                     LD      hl,0x0050       ;hl = 50 (80)
+                                                            ;fall thru to MAKETONE
+
 0193                                                        ;subroutine: play tone, freq c, duration h1
 0193                                                        ;destroys: hl, de, a, b
 0193   29           MAKETONE:       ADD     hl,hl           ;hl = hl + h1, why?
@@ -326,7 +343,8 @@
 01AE   FF                           DB      0xFF   
 01AF   FF                           DB      0xFF   
 
-01B0   ED 5B 00 08  PLAYMUSIC:      LD      de,(STARTRAM)   
+                    PLAYMUSIC:      ORG     0x01B0
+01B0   ED 5B 00 08                  LD      de,(STARTRAM)   
 01B4   1A                           LD      a,(de)   
 01B5   E6 1F                        AND     0x1f   
 01B7   FE 1F                        CP      0x1f   
@@ -414,8 +432,10 @@
 022C   FF                           DB      0xFF   
 022D   FF                           DB      0xFF   
 022E   FF                           DB      0xFF   
-022F   FF                           DB      0xFF   
-0230   06 06        TUNE1:          DB      0x06,0x06   
+022F   FF                           DB      0xFF 
+
+                    TUNE1:          ORG     0x0230
+0230   06 06                        DB      0x06,0x06   
 0232   0A                           DB      0x0A   
 0233   0D                           DB      0x0D   
 0234   06 0D                        DB      0x06,0x0D   
@@ -466,7 +486,9 @@
 026C   06 12                        DB      0x06,0x12   
 026E   00                           DB      0x00   
 026F   1E                           DB      0x1E   
-0270   FD 2A 00 08  BANNER:         LD      iy,(STARTRAM)   
+
+                    BANNER:         ORG     0x0270  
+0270   FD 2A 00 08                  LD      iy,(STARTRAM)   
 0274   DD 21 F1 0F                  LD      ix,DISPLAY   
 0278   06 06                        LD      b,0x06   
 027A   21 F1 0F                     LD      hl,DISPLAY   
@@ -498,6 +520,7 @@
 02AE   3D                           DEC     a   
 02AF   20 F8                        JR      nz,0x02a9   
 02B1   18 CF                        JR      0x0282   
+
 02B3   00           CHARSEGTBL:     DB      0x00            ;00 SPACE
 02B4   6F                           DB      0x6F            ;01 A
 02B5   E6                           DB      0xE6            ;02 B
@@ -527,8 +550,10 @@
 02CD   18                           DB      0x18            ;1A !
 02CE   00                           DB      0x00            
 02CF   00                           DB      0x00            
-02D0   00                           DB      0x00            
-02D1   08           WELCOME:        DB      0x08            ;h
+02D0   00                           DB      0x00  
+
+                    WELCOME:        ORG     0x02D1
+02D1   08                           DB      0x08            ;h
 02D2   05                           DB      0x05            ;e
 02D3   0C                           DB      0x0c            ;l
 02D4   0C                           DB      0x0c            ;l
@@ -607,7 +632,9 @@
 031D   FF                           DB      0xff       
 031E   FF                           DB      0xff   
 031F   FF                           DB      0xff   
-0320   DD 21 F1 0F  INVADERS:       LD      ix,DISPLAY   
+
+                    INVADERS:       ORG     0x0320
+0320   DD 21 F1 0F                  LD      ix,DISPLAY   
 0324   AF                           XOR     a   
 0325   32 FA 0F                     LD      (KEYFLAG),a   
 0328   32 FB 0F                     LD      (0x0ffb),a   
@@ -714,7 +741,9 @@
 03DD   FF                           DB      0xFF   
 03DE   FF                           DB      0xFF   
 03DF   FF                           DB      0xFF   
-03E0   DD 21 F1 0F  NIM:            LD      ix,DISPLAY      ;ix = display[0]
+
+                    NIM:            ORG     0x03E0
+03E0   DD 21 F1 0F                  LD      ix,DISPLAY      ;ix = display[0]
 03E4   3E 23                        LD      a,0x23          ;23 matches in BCD?
 03E6   32 FA 0F                     LD      (KEYFLAG),a     ;save in total matches?
 03E9   21 F1 0F                     LD      hl,DISPLAY      ;hl = DISPLAY
@@ -786,7 +815,9 @@
 0475   C9                           RET         
 0476   3C           L476:           INC     a   
 0477   C3 38 04                     JP      L438   
+
 047A   FF                           DB      0xFF   
+
 047B   14           LUNAS1:         DB      0x14            ;D
 047C   12                           DB      0x12            ;C
 047D   14                           DB      0x14            ;D
@@ -803,8 +834,10 @@
 048C   FF                           DB      0xFF   
 048D   FF                           DB      0xFF   
 048E   FF                           DB      0xFF   
-048F   FF                           DB      0xFF   
-0490   DD 21 F1 0F  LUNALANDER:     LD      ix,DISPLAY   
+048F   FF                           DB      0xFF
+
+                    LUNALANDER:     ORG     0x490           
+0490   DD 21 F1 0F                  LD      ix,DISPLAY   
 0494   FD 21 00 08                  LD      iy,STARTRAM   
 0498   3E 50                        LD      a,0x50   
 049A   FD 77 00                     LD      (iy+0),a   
@@ -847,6 +880,7 @@
 04EB   30 1B                        JR      nc,0x0508   
 04ED   FD 77 00                     LD      (iy+0),a   
 04F0   C3 B0 04                     JP      0x04b0   
+
 04F3   FD 7E 01     L4F3:           LD      a,(iy+1)   
 04F6   FE 00                        CP      0x00   
 04F8   C8                           RET     z   
@@ -858,6 +892,7 @@
 0503   27                           DAA         
 0504   FD 77 02                     LD      (iy+2),a   
 0507   C9                           RET         
+
 0508   11 84 04                     LD      de,LUNAS2   
 050B   DD 21 00 00                  LD      ix,0x0000   
 050F   18 03                        JR      0x0514   
@@ -888,8 +923,10 @@
 0533   0A                           DB      0x0A   
 0534   0A                           DB      0x0A   
 0535   0A                           DB      0x0A   
-0536   06 06                        DB      0x06,0x06   
-0538   06 0B                        DB      0x06,0x0B   
+0536   06                           DB      0x06   
+0537   06                           DB      0x06   
+0538   06                           DB      0x06   
+0539   0B                           DB      0x0B   
 053A   0A                           DB      0x0A   
 053B   08                           DB      0x08   
 053C   0A                           DB      0x0A   
@@ -974,34 +1011,41 @@
 05AE   FF                           DB      0xFF   
 05AF   FF                           DB      0xFF   
 
-05B0   21 00 08                     LD      hl,STARTRAM     ;sequencer
-05B3   11 00 0B                     LD      de,0x0b00   
-05B6   7E           L5B6:           LD      a,(hl)   
-05B7   FE FF                        CP      0xff   
-05B9   C2 C2 05                     JP      nz,0x05c2   
-05BC   21 00 08                     LD      hl,STARTRAM   
-05BF   C3 B6 05                     JP      L5B6   
-05C2   D3 03                        OUT     (0x03),a   
-05C4   1A                           LD      a,(de)   
-05C5   FE FF                        CP      0xff   
-05C7   C2 D0 05                     JP      nz,0x05d0   
-05CA   11 00 0B                     LD      de,0x0b00   
-05CD   C3 C4 05                     JP      0x05c4   
-05D0   D3 04                        OUT     (0x04),a   
-05D2   CD E1 05                     CALL    L5E1   
-05D5   13                           INC     de   
-05D6   1A                           LD      a,(de)   
-05D7   D3 04                        OUT     (0x04),a   
-05D9   CD E1 05                     CALL    L5E1   
-05DC   13                           INC     de   
-05DD   23                           INC     hl   
-05DE   C3 B6 05                     JP      L5B6   
-05E1   01 FF 03     L5E1:           LD      bc,0x03ff   
-05E4   0B                           DEC     bc   
-05E5   78                           LD      a,b   
-05E6   B1                           OR      c   
-05E7   C2 E4 05                     JP      nz,0x05e4   
-05EA   C9                           RET         
+                                                            ;sequencer
+                    SEQUENCER:      ORG     0x5B0
+05B0   21 00 08                     LD      hl,SLOWSEQ      ;hl = 800
+05B3   11 00 0B                     LD      de,FASTSEQ      ;de = B00
+05B6   7E           LOOPSEQ:        LD      a,(hl)          ;a = (hl) 
+05B7   FE FF                        CP      ENDOFSEQ        ;if a != ENDOFSEQ 
+05B9   C2 C2 05                     JP      nz,SEQ2         ;  goto SEQ2
+05BC   21 00 08                     LD      hl,SLOWSEQ      ;hl = 800 
+05BF   C3 B6 05                     JP      LOOPSEQ         ;goto LOOPSEQ
+
+05C2   D3 03        SEQ2:           OUT     (PORTSLOW),a    ;output to PORTSLOW 
+05C4   1A           SEQ3:           LD      a,(de)          ;a = (de)
+05C5   FE FF                        CP      ENDOFSEQ        ;if a != ENDOFSEQ
+05C7   C2 D0 05                     JP      nz,SEQ4         ;  goto SEQ4
+05CA   11 00 0B                     LD      de,FASTSEQ      ;de = FASTSEQ 
+05CD   C3 C4 05                     JP      SEQ3            ;goto SEQ3
+
+05D0   D3 04        SEQ4:           OUT     (PORTFAST),a    ;output a to PORTFAST 
+05D2   CD E1 05                     CALL    SEQDELAY        ;delay
+05D5   13                           INC     de              ;de++ 
+05D6   1A                           LD      a,(de)          ;a = (de) 
+05D7   D3 04                        OUT     (PORTFAST),a    ;output a to PORTFAST
+05D9   CD E1 05                     CALL    SEQDELAY        ;delay
+05DC   13                           INC     de              ;de++
+05DD   23                           INC     hl              ;hl++
+05DE   C3 B6 05                     JP      LOOPSEQ         ;loop SEQUENCE
+
+                                                            ;subroutine: delay by SEQDELAY
+                                                            ;destroys b, c, a
+05E1   01 FF 03     SEQDELAY:       LD      bc,0x03ff       ;bc = SEQDELAY 
+05E4   0B           SEQDEL1:        DEC     bc              ;dec bc
+05E5   78                           LD      a,b             ;a = c
+05E6   B1                           OR      c               ;if (a | c == 0)
+05E7   C2 E4 05                     JP      nz,SEQDEL1      ;  loop SEQDEL1 
+05EA   C9                           RET                     ;return
 05EB   FF                           DB      0xFF   
 05EC   FF                           DB      0xFF   
 05ED   FF                           DB      0xFF   
@@ -1730,10 +1774,10 @@ TUNE2:              0530 DEFINED AT LINE 871
                     > USED AT LINE 49
 STARTMON2:          0580 DEFINED AT LINE 938
                     > USED AT LINE 1011
-L5B6:               05B6 DEFINED AT LINE 963
+LOOPSEQ:               05B6 DEFINED AT LINE 963
                     > USED AT LINE 967
                     > USED AT LINE 982
-L5E1:               05E1 DEFINED AT LINE 983
+SEQDELAY:               05E1 DEFINED AT LINE 983
                     > USED AT LINE 975
                     > USED AT LINE 979
 STARTMON:           05F0 DEFINED AT LINE 994
