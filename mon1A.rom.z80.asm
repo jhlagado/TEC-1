@@ -2,7 +2,8 @@
 *                                                                                                   *      
 *                      TEC-1 Monitor ROM v1A (c) John Hardy 1983 - 2018                             *    
 *                      Released under the GNU GENERAL PUBLIC LICENSE 3.0                            * 
-*                      SEQUENCER at 0x05B0 by Ken Stone                                             *
+*                                                                                                   *
+*                      SEQUENCER at 0x05B0 written by Ken Stone                                     *
 *                                                                                                   *
 *****************************************************************************************************
 
@@ -507,7 +508,7 @@
 026E   00                           DB      0x00   
 026F   1E                           DB      0x1E   
 
-                    SHOWTEXT:         ORG     0x0270  
+                    SHOWTEXT:       ORG     0x0270  
 0270   FD 2A 00 08                  LD      iy,(STARTRAM)   ;iy = text_ptr  
 0274   DD 21 F1 0F                  LD      ix,DISPLAY      ;ix = display_ptr
 
@@ -753,7 +754,9 @@
 03C9   04                           DB      0x04            ;d
 03CA   1A                           DB      0x1A            ;!
 03CB   1F                           DB      0x1F            ;END
-03CC   0E 08        NIMWIN:         DB      0x0E,0x08       ;o h
+
+03CC   0E           NIMWIN:         DB      0x0E            ;o
+03CD   08                           DB      0x08            ;h
 03CE   00                           DB      0x00    
 03CF   0D                           DB      0x0D            ;n
 03D0   0E 19                        DB      0x0E,0x19       ;o .
