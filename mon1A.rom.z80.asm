@@ -9,6 +9,9 @@
 0000                STARTRAM:       EQU     0x800   
 0000                DISPLAY:        EQU     0x0ff1          ;display start (data part)
 0000                DISPLAY2:       EQU     0x0ff3          ;display address part offset
+0000                DISPLAY5:       EQU     0x0ff6          ;second last display digit
+0000                DISPLAY6:       EQU     0x0ff7          ;last display digit
+
 0000                ADDRESS:        EQU     0x0ff7          ;stores the address pointer
 0000                MODE:           EQU     0x0ff9          ;0 = ADDR_MODE, 67 = DATA_MODE
 0000                KEYFLAG:        EQU     0x0ffa          ;boolean, if false then it's the
@@ -23,12 +26,12 @@
                     SLOWSEQ:        EQU     0x0800          ;fast and slow sequencer data 
                     FASTSEQ:        EQU     0x0b00          ;see SEQUENCER code
                     ENDOFSEQ:       EQU     0xFF            ;end of sequence
-                    REPEATBANNER:   EQU     0x1E            ;repeat showing banner
-                    ENDOFBANNER:    EQU     0x1F            ;end of banner
+                    REPEATTEXT:   EQU     0x1E            ;repeat showing banner
+                    ENDOFTEXT:    EQU     0x1F            ;end of banner
                     REPEATTUNE:     EQU     0x1E            ;repeat playing tune
                     ENDOFTUNE:      EQU     0x1F            ;end of tune
 
-0000                                ORG    0x0000   
+0000                                ORG     0x0000   
 0000   C3 F0 05                     JP      STARTMON   
 0003   FF                           DB      0xFF   
 0004   FF                           DB      0xFF   
@@ -111,8 +114,8 @@
 0063   FF                           DB      0xFF   
 0064   FF                           DB      0xFF   
 0065   FF                           DB      0xFF   
-0066                                                        ;n   on-maskable interrupt: read key from keyboard into i
-0066                                                        ;d   estroys a    BUG: fix bug to save a
+0066                                                        ;non-maskable interrupt: read key from keyboard into i
+0066                                                        ;destroys a    BUG: fix bug to save a
                     NMINT:          ORG     0x0066
 0066   DB 00                        IN      a,(0x00)        ;input a from keyboard
 0068   E6 1F                        AND     0x1f            ;mask lower 5 bits
@@ -172,6 +175,7 @@
 00E5   06 02                        LD      b,0x02          ;two digits
 00E7   21 F1 0F                     LD      hl,DISPLAY      ;display+0 offset for data
 00EA                                                        ;WRITEDISP fall-through
+
 00EA                                                        ;subroutine: write HEX values for ADDRESS and (ADDRESS)
 00EA                                                        ;updates mode i.e. data or address
 00EA                                                        ;show focus for mode with decimal points
@@ -333,6 +337,7 @@
 01A2   ED 52                        SBC     hl,de           ;hl = hl - 1
 01A4   20 F5                        JR      nz,MTLOOP   
 01A6   C9                           RET         
+
 01A7   FF                           DB      0xFF   
 01A8   FF                           DB      0xFF   
 01A9   FF                           DB      0xFF   
@@ -359,11 +364,11 @@
 01C7   13                           INC     de   
 01C8   D5                           PUSH    de   
 01C9   21 F8 01                     LD      hl,0x01f8   
-01CC   CD E3 01                     CALL    L1E3   
+01CC   CD E3 01                     CALL    CHAR2SEG   
 01CF   F5                           PUSH    af   
 01D0   78                           LD      a,b   
 01D1   21 10 02                     LD      hl,0x0210   
-01D4   CD E3 01                     CALL    L1E3   
+01D4   CD E3 01                     CALL    CHAR2SEG   
 01D7   6F                           LD      l,a   
 01D8   26 00                        LD      h,0x00   
 01DA   F1                           POP     af   
@@ -371,11 +376,19 @@
 01DC   CD 93 01                     CALL    MAKETONE   
 01DF   D1                           POP     de   
 01E0   C3 B4 01                     JP      0x01b4   
-01E3   5F           L1E3:           LD      e,a   
-01E4   16 00                        LD      d,0x00   
-01E6   19                           ADD     hl,de   
-01E7   7E                           LD      a,(hl)   
-01E8   C9                           RET         
+
+                                                            ;subroutine: convert a to 7 segments
+                                                            ;a = char
+                                                            ;hl = CHAR7SEGTBL
+                                                            ;result in a
+                                                            ;destroys e, d
+
+01E3   5F           CHAR2SEG:       LD      e,a             ;e = char
+01E4   16 00                        LD      d,0x00          ;d = 0
+01E6   19                           ADD     hl,de           ;hl = hl + de
+01E7   7E                           LD      a,(hl)          ;a = CHAR7SEGTBL + charoffset
+01E8   C9                           RET                     ;return
+
 01E9   D5                           PUSH    de   
 01EA   11 00 10                     LD      de,0x1000   
 01ED   1B                           DEC     de   
@@ -488,40 +501,49 @@
 026F   1E                           DB      0x1E   
 
                     BANNER:         ORG     0x0270  
-0270   FD 2A 00 08                  LD      iy,(STARTRAM)   
-0274   DD 21 F1 0F                  LD      ix,DISPLAY   
-0278   06 06                        LD      b,0x06   
-027A   21 F1 0F                     LD      hl,DISPLAY   
-027D   36 00                        LD      (hl),0x00   
-027F   23                           INC     hl   
-0280   10 FB                        DJNZ    0x027d   
-0282   06 06                        LD      b,0x06   
-0284   11 F7 0F                     LD      de,ADDRESS   
-0287   21 F6 0F                     LD      hl,0x0ff6   
-028A   7E                           LD      a,(hl)   
-028B   12                           LD      (de),a   
-028C   2B                           DEC     hl   
-028D   1B                           DEC     de   
-028E   10 FA                        DJNZ    0x028a   
-0290   FD 7E 00                     LD      a,(iy+0)   
-0293   FD 23                        INC     iy   
-0295   E6 1F                        AND     0x1f   
-0297   FE 1F                        CP      0x1f   
-0299   C8                           RET     z   
-029A   FE 1E                        CP      0x1e   
-029C   28 D2                        JR      z,BANNER   
-029E   21 B3 02                     LD      hl,CHARSEGTBL   
-02A1   CD E3 01                     CALL    L1E3   
-02A4   32 F1 0F                     LD      (DISPLAY),a   
-02A7   3E 80                        LD      a,0x80   
-02A9   F5                           PUSH    af   
-02AA   CD 40 01                     CALL    SCANDISP   
-02AD   F1                           POP     af   
-02AE   3D                           DEC     a   
-02AF   20 F8                        JR      nz,0x02a9   
-02B1   18 CF                        JR      0x0282   
+0270   FD 2A 00 08                  LD      iy,(STARTRAM)   ;iy = text_ptr  
+0274   DD 21 F1 0F                  LD      ix,DISPLAY      ;ix = display_ptr
 
-02B3   00           CHARSEGTBL:     DB      0x00            ;00 SPACE
+                                                            ;clear display
+0278   06 06                        LD      b,0x06          ;b = num of display digits
+027A   21 F1 0F                     LD      hl,DISPLAY      ;hl = display_ptr
+027D   36 00        BANN1:          LD      (hl),0x00       ;(hl) = SPACE
+027F   23                           INC     hl              ;hl++
+0280   10 FB                        DJNZ    BANN1           ;loop until b == 0
+
+0282   06 06        BANNLOOP:       LD      b,0x06          ;b = num of display digits
+0284   11 F7 0F                     LD      de,DISPLAY6     ;de = last display digit 
+0287   21 F6 0F                     LD      hl,0x0ff6       ;hl = second last display digit
+
+                                                            ;shift display one digit to the left    
+028A   7E           BANN2:          LD      a,(hl)          ;a = (hl)
+028B   12                           LD      (de),a          ;(de) = a
+028C   2B                           DEC     hl              ;hl--
+028D   1B                           DEC     de              ;de--
+028E   10 FA                        DJNZ    BANN2
+
+0290   FD 7E 00                     LD      a,(iy+0)        ;a = (iy) ;text char
+0293   FD 23                        INC     iy              ;iy++
+0295   E6 1F                        AND     0x1f            ;mask lower 5 bits
+0297   FE 1F                        CP      0x1f            ;if a == ENDOFTEXT
+0299   C8                           RET     z               ;  return
+029A   FE 1E                        CP      0x1e            ;if a == REPEATTEXT
+029C   28 D2                        JR      z,BANNER        ;  goto BANNER 
+
+029E   21 B3 02                     LD      hl,CHAR7SEGTBL  ;hl = char_7segment_table
+02A1   CD E3 01                     CALL    CHAR2SEG        ;convert char to 7segments    
+02A4   32 F1 0F                     LD      (DISPLAY),a     ;store in first digit 
+
+                                                            ;scan display 128 times 
+02A7   3E 80                        LD      a,0x80          ;a = 80
+02A9   F5           BANN3:          PUSH    af              ;save a    
+02AA   CD 40 01                     CALL    SCANDISP        ;scan display
+02AD   F1                           POP     af              ;restore a
+02AE   3D                           DEC     a               ;if (a-- != 0)
+02AF   20 F8                        JR      nz,BANN3        ;  goto BANN3
+02B1   18 CF                        JR      BANNLOOP        ;repeat shifting and scanning    
+
+02B3   00           CHAR7SEGTBL:    DB      0x00            ;00 SPACE
 02B4   6F                           DB      0x6F            ;01 A
 02B5   E6                           DB      0xE6            ;02 B
 02B6   C3                           DB      0xC3            ;03 C
@@ -1724,7 +1746,7 @@ PLAYMUSIC:          01B0 DEFINED AT LINE 318
                     > USED AT LINE 63
                     > USED AT LINE 326
                     > USED AT LINE 853
-L1E3:               01E3 DEFINED AT LINE 345
+CHAR2SEG:               01E3 DEFINED AT LINE 345
                     > USED AT LINE 333
                     > USED AT LINE 337
                     > USED AT LINE 481
@@ -1733,7 +1755,7 @@ TUNE1:              0230 DEFINED AT LINE 407
 BANNER:             0270 DEFINED AT LINE 458
                     > USED AT LINE 479
                     > USED AT LINE 764
-CHARSEGTBL:         02B3 DEFINED AT LINE 490
+CHAR7SEGTBL:         02B3 DEFINED AT LINE 490
                     > USED AT LINE 480
 WELCOME:            02D1 DEFINED AT LINE 520
 INVADERS:           0320 DEFINED AT LINE 599
