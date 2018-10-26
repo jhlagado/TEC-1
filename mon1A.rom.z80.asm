@@ -108,8 +108,8 @@
 006C   C9                           RET                     ;BUG: should be RETN
 006D                                                        ;b   ranches here after WRITEDISP
 006D   31 D0 0F     WRITEDISP2:     LD      sp,0x0fd0   
-0070   CD 31 01                     CALL      GETKEY        ;(blocking) get key
-0073   CD 8E 01                     CALL      BEEP          ;beep
+0070   CD 31 01                     CALL    GETKEY          ;(blocking) get key
+0073   CD 8E 01                     CALL    BEEP            ;beep
 0076   3A F9 0F                     LD      a,(MODE)        ;a = addr/data
 0079   FE 00                        CP      0x00            ;z = (MODE == ADDR_MODE)
 007B   C2 96 00                     JP      nz,WRITEDISP3   
@@ -118,16 +118,16 @@
 0080   FE 10                        CP      0x10   
 0082   DA 88 00                     JP      c,ADDRKEY       ;key is numeric
 0085   C3 E3 00                     JP      DATADISP        ;change to DATA_MODE
-0088   21 F7 0F     ADDRKEY:         LD      hl,ADDRESS   
-008B   CD 6F 01                     CALL      GETADDRKEY    ;getkey and clear 16 bits if !KEYFLAG
+0088   21 F7 0F     ADDRKEY:        LD      hl,ADDRESS   
+008B   CD 6F 01                     CALL    GETADDRKEY      ;getkey and clear 16 bits if !KEYFLAG
 008E   ED 6F                        RLD                     ;rotate left nibble (hl) <- a
-0090   23                           INC      hl             ;point to upper byte
+0090   23                           INC     hl              ;point to upper byte
 0091   ED 6F                        RLD                     ;rotate left nibble (hl) <- a
 0093   C3 DA 00                     JP      ADDRDISP        ;change to ADDR_MODE
-0096   ED 57        WRITEDISP3      :   L   D   a,i         ;is DATA_MODE
+0096   ED 57        WRITEDISP3:     LD      a,i             ;is DATA_MODE
 0098   FE 10                        CP      0x10   
 009A   DA B7 00                     JP      c,DATAKEY       ;key is numeric
-009D   AF                           XOR      a              ;is function key
+009D   AF                           XOR     a               ;is function key
 009E   32 FA 0F                     LD      (KEYFLAG),a     ;(KEYFLAG)=false init key after mode change
 00A1   ED 57                        LD      a,i             ;a = key value
 00A3   FE 13                        CP      0x13            ;(AD) MODE key
@@ -138,25 +138,25 @@
 00AF   CA C6 00                     JP      z,DECADDR   
 00B2   FE 10                        CP      0x10            ;(+) KEY
 00B4   CA D0 00                     JP      z,INCADDR   
-00B7   2A F7 0F     DATAKEY:         LD      hl,(ADDRESS)   
-00BA   CD 7B 01                     CALL      GETDATAKEY    ;getkey and clear 16 bits if !KEYFLAG
+00B7   2A F7 0F     DATAKEY:        LD      hl,(ADDRESS)   
+00BA   CD 7B 01                     CALL    GETDATAKEY      ;getkey and clear 16 bits if !KEYFLAG
 00BD   ED 6F                        RLD                     ;rotate left nibble (hl) <- a
 00BF   C3 E3 00                     JP      DATADISP   
 00C2   2A F7 0F     GOADDR:         LD      hl,(ADDRESS)   
 00C5   E9                           JP      (hl)   
-00C6   2A F7 0F     DECADDR:         LD      hl,(ADDRESS)   
-00C9   2B                           DEC      hl   
+00C6   2A F7 0F     DECADDR:        LD      hl,(ADDRESS)   
+00C9   2B                           DEC     hl   
 00CA   22 F7 0F                     LD      (ADDRESS),hl   
 00CD   C3 E3 00                     JP      DATADISP   
-00D0   2A F7 0F     INCADDR:         LD      hl,(ADDRESS)   
-00D3   23                           INC      hl   
+00D0   2A F7 0F     INCADDR:        LD      hl,(ADDRESS)   
+00D3   23                           INC     hl   
 00D4   22 F7 0F                     LD      (ADDRESS),hl   
 00D7   C3 E3 00                     JP      DATADISP   
-00DA   3E 00        ADDRDISP:         LD      a,0x00        ;0
+00DA   3E 00        ADDRDISP:       LD      a,0x00          ;0
 00DC   06 04                        LD      b,0x04          ;4 digits
 00DE   21 F3 0F                     LD      hl,DISPLAY2     ;display+2 offset for address
 00E1   18 07                        JR      WRITEDISP   
-00E3   3E 67        DATADISP:         LD      a,0x67        ;01100111
+00E3   3E 67        DATADISP:       LD      a,0x67          ;01100111
 00E5   06 02                        LD      b,0x02          ;two digits
 00E7   21 F1 0F                     LD      hl,DISPLAY      ;display+0 offset for data
 00EA                                                        ;WRITEDISP fall-through
@@ -167,84 +167,85 @@
 00EA                                                        ;b = num decimal points to focus
 00EA                                                        ;hl = offset into display to focus
 00EA                                                        ;destroys
-00EA   32 F9 0F     WRITEDISP:         LD      (MODE),a   
+00EA   32 F9 0F     WRITEDISP:      LD      (MODE),a   
 00ED   D9                           EXX         
 00EE   ED 5B F7 0F                  LD      de,(ADDRESS)    ;de = ADDRESS value
-00F2   CD 02 01                     CALL      WRITEADDR   
+00F2   CD 02 01                     CALL    WRITEADDR   
 00F5   1A                           LD      a,(de)          ;a = (ADDRESS) value
-00F6   CD 0E 01                     CALL      WRITEDATA   
+00F6   CD 0E 01                     CALL    WRITEDATA   
 00F9   D9                           EXX         
-00FA   CB E6        DPLOOP:         SET      4,(hl)         ; set decimal point
-00FC   23                           INC      hl   
-00FD   10 FB                        DJNZ      DPLOOP   
+00FA   CB E6        DPLOOP:         SET     4,(hl)          ; set decimal point
+00FC   23                           INC     hl   
+00FD   10 FB                        DJNZ    DPLOOP   
 00FF   C3 6D 00                     JP      WRITEDISP2   
 0102                                                        ;subroutine: write HEX value of de to DISPLAY+2
 0102                                                        ;destroys a, hl
-0102   21 F3 0F     WRITEADDR:         LD      hl,DISPLAY2   
+0102   21 F3 0F     WRITEADDR:      LD      hl,DISPLAY2   
 0105   7B                           LD      a,e   
-0106   CD 15 01                     CALL      WRITEHEX   
+0106   CD 15 01                     CALL    WRITEHEX   
 0109   7A                           LD      a,d   
-010A   CD 15 01                     CALL      WRITEHEX   
+010A   CD 15 01                     CALL    WRITEHEX   
 010D   C9                           RET         
 010E                                                        ;subroutine: write HEX value of a to DISPLAY
 010E                                                        ;destroys a, hl
-010E   21 F1 0F     WRITEDATA:         LD      hl,DISPLAY   ;hl = DISPLAY
-0111   CD 15 01                     CALL      WRITEHEX      ;write a to (hl)
+010E   21 F1 0F     WRITEDATA:      LD      hl,DISPLAY      ;hl = DISPLAY
+0111   CD 15 01                     CALL    WRITEHEX        ;write a to (hl)
 0114   C9                           RET         
 0115                                                        ;subroutine: write HEX value of a to (hl)
 0115                                                        ;destroys a
 0115                                                        ;hl = h1 + 2
-0115   F5           WRITEHEX:         PUS   H   af          ;save a
-0116   CD 26 01                     CALL      HEX2SEGS      ;convert lower HEX nibble to segments
+0115   F5           WRITEHEX:       PUSH    af              ;save a
+0116   CD 26 01                     CALL    HEX2SEGS        ;convert lower HEX nibble to segments
 0119   77                           LD      (hl),a          ;write a to (hl)
-011A   23                           INC      hl             ;hl++
-011B   F1                           POP      af             ;restore a
+011A   23                           INC     hl              ;hl++
+011B   F1                           POP     af              ;restore a
 011C   0F                           RRCA                    ;shift upper HEX nibble to lower
 011D   0F                           RRCA             
 011E   0F                           RRCA          
 011F   0F                           RRCA          
-0120   CD 26 01                     CALL      HEX2SEGS      ;convert lower HEX nibble to segments
+0120   CD 26 01                     CALL    HEX2SEGS        ;convert lower HEX nibble to segments
 0123   77                           LD      (hl),a          ;write to (hl)
-0124   23                           INC      hl             ;hl++
+0124   23                           INC     hl              ;hl++
 0125   C9                           RET                     ;return
 0126                                                        ;subroutine: convert number in a to segments
 0126                                                        ;a    = HEXSEGTBL[a]
-0126   E5           HEX2SEGS:         PUS   H   hl          ;save hl
+0126   E5           HEX2SEGS:       PUSH    hl              ;save hl
 0127   21 5F 01                     LD      hl,HEXSEGTBL    ;hl = HEXSEGTBL
-012A   E6 0F                        AND      0x0f           ; a && 0xF
-012C   85                           ADD      a,l            ; hl = hl + a
+012A   E6 0F                        AND     0x0f            ; a && 0xF
+012C   85                           ADD     a,l             ; hl = hl + a
 012D   6F                           LD      l,a    
 012E   7E                           LD      a,(hl)          ;HEXSEGTBL[a]
-012F   E1                           POP      hl             ;restore hl
+012F   E1                           POP     hl              ;restore hl
 0130   C9                           RET                     ;return
 0131                                                        ;subroutine: scan display while watching for keypress
 0131                                                        ;i = key
 0131                                                        ;destroys a
 0131   3E FF        GETKEY:         LD      a,0xff   
 0133   ED 47                        LD      i,a             ;i == FF ie. NOKEY
-0135   CD 40 01                     CALL      SCANDISP      ;scan the display
+0135   CD 40 01                     CALL    SCANDISP        ;scan the display
 0138   ED 57                        LD      a,i   
 013A   FE FF                        CP      0xff   
-013C   C0                           RET      nz             ;if (i != NOKEY) return i
+013C   C0                           RET     nz              ;if (i != NOKEY) return i
 013D   C3 31 01                     JP      GETKEY   
 0140                                                        ;subroutine: display each digit in turn
 0140                                                        ;destroys b, c, a
-0140   DD E5        SCANDISP:         PUS   H   ix          ;save ix, ix == DISPLAY???
+0140   DD E5        SCANDISP:       PUSH    ix              ;save ix, ix == DISPLAY???
 0142   01 01 06                     LD      bc,0x0601       ;b = numdigits, c = 1
 0145   DD 7E 00     L145:           LD      a,(ix+0)        ;a = (ix)
-0148   D3 02                        OUT      (PORTSEGS),a   ;out segments
-014A   DD 23                        INC      ix             ;ix++
+0148   D3 02                        OUT     (PORTSEGS),a    ;out segments
+014A   DD 23                        INC     ix              ;ix++
 014C   79                           LD      a,c             ;a = c
-014D   D3 01                        OUT      (PORTDIGIT),a  ;out digit
-014F   CB 27                        SLA      a              ;shift left to next digit
+014D   D3 01                        OUT     (PORTDIGIT),a   ;out digit
+014F   CB 27                        SLA     a               ;shift left to next digit
 0151   4F                           LD      c,a             ;c = a
 0152   3E 0A                        LD      a,0x0a          ;a = 0A (10)
-0154   3D           SDDELAY:         DEC      a             ;a--
+0154   3D           SDDELAY:        DEC     a               ;a--
 0155   C2 54 01                     JP      nz,SDDELAY      ;loop delay???
-0158   D3 01                        OUT      (PORTDIGIT),a  ;a = 0, turn off digits?
-015A   10 E9                        DJNZ      L145          ;loop until b == 0
-015C   DD E1                        POP      ix             ;restore ix
+0158   D3 01                        OUT     (PORTDIGIT),a   ;a = 0, turn off digits?
+015A   10 E9                        DJNZ    L145            ;loop until b == 0
+015C   DD E1                        POP     ix              ;restore ix
 015E   C9                           RET                     ;return
+
 015F   EB           HEXSEGTBL:      DB      0xEB            ;0 7 SEGMENTS FOR NUMBERS
 0160   28                           DB      0x28            ;1
 0161   CD                           DB      0xCD            ;2
@@ -261,6 +262,7 @@
 016C   EC                           DB      0xEC            ;D
 016D   C7                           DB      0xC7            ;E
 016E   47                           DB      0x47            ;F
+
 016F                                                        ;subroutine: getkey, check KEYFLAG
 016F                                                        ;if ((KEYFLAG)==false) {
 016F                                                        ;     clear (hl)
@@ -269,12 +271,12 @@
 016F                                                        ;}   
 016F                                                        ;r   eturns key in a
 016F                                                        ;d   estroys: b
-016F   CD 7B 01     GETADDRKEY      :   C   ALL   GETDATAKEY;get key
-0172   C0                           RET      nz   
-0173   23                           INC      hl   
+016F   CD 7B 01     GETADDRKEY:     CALL    GETDATAKEY      ;get key
+0172   C0                           RET     nz   
+0173   23                           INC     hl   
 0174   3E 00                        LD      a,0x00   
 0176   77                           LD      (hl),a   
-0177   2B                           DEC      hl   
+0177   2B                           DEC     hl   
 0178   ED 57                        LD      a,i   
 017A   C9                           RET                     ;return (a=key)
 017B                                                        ;subroutine: getkey, check KEYFLAG
@@ -285,15 +287,15 @@
 017B                                                        ;}   
 017B                                                        ;returns key in a
 017B                                                        ;destroys: b
-017B   ED 57        GETDATAKEY:     LD   a,i   ; 
+017B   ED 57        GETDATAKEY:     LD      a,i    
 017D   47                           LD      b,a             ;b = key
 017E   3A FA 0F                     LD      a,(KEYFLAG)    
 0181   FE 00                        CP      0x00    
 0183   78                           LD      a,b             ;a = key
-0184   C0                           RET      nz             ;if (KEYFLAG == true) return a=key
-0185   AF                           XOR      a              ;else
+0184   C0                           RET     nz              ;if (KEYFLAG == true) return a=key
+0185   AF                           XOR     a               ;else
 0186   77                           LD      (hl),a          ;(hl) = 0
-0187   3D                           DEC      a    
+0187   3D                           DEC     a    
 0188   32 FA 0F                     LD      (KEYFLAG),a     ;(STORE) = FF
 018B   78                           LD      a,b             ;a = key
 018C   C9                           RET                     ;return a=key
@@ -302,16 +304,16 @@
 0190   21 50 00                     LD      hl,0x0050       ;hl = 50 (80)
 0193                                                        ;subroutine: play tone, freq c, duration h1
 0193                                                        ;destroys: hl, de, a, b
-0193   29           MAKETONE:         ADD      hl,hl        ;hl = hl + h1, why?
+0193   29           MAKETONE:       ADD     hl,hl           ;hl = hl + h1, why?
 0194   11 01 00                     LD      de,0x0001       ;de = 1
-0197   AF                           XOR      a              ;a = 0
-0198   D3 02                        OUT      (PORTSEGS),a   ;clear segments
-019A   3D                           DEC      a              ;a = FF
-019B   D3 01        MTLOOP:         OUT      (PORTDIGIT),a  ;all digitis on?
+0197   AF                           XOR     a               ;a = 0
+0198   D3 02                        OUT     (PORTSEGS),a    ;clear segments
+019A   3D                           DEC     a               ;a = FF
+019B   D3 01        MTLOOP:         OUT     (PORTDIGIT),a   ;all digitis on?
 019D   41                           LD      b,c             ;b = c
-019E   10 FE        MTDELAY:         DJNZ      MTDELAY      ;delay?
-01A0   EE 80                        XOR      0x80           ;invert bit 7 of a (clear carry?)
-01A2   ED 52                        SBC      hl,de          ;hl = hl - 1
+019E   10 FE        MTDELAY:        DJNZ    MTDELAY         ;delay?
+01A0   EE 80                        XOR     0x80            ;invert bit 7 of a (clear carry?)
+01A2   ED 52                        SBC     hl,de           ;hl = hl - 1
 01A4   20 F5                        JR      nz,MTLOOP   
 01A6   C9                           RET         
 01A7   FF                           DB      0xFF   
@@ -323,11 +325,12 @@
 01AD   FF                           DB      0xFF   
 01AE   FF                           DB      0xFF   
 01AF   FF                           DB      0xFF   
-01B0   ED 5B 00 08  PLAYMUSIC:         LD      de,(STARTRAM)   
+
+01B0   ED 5B 00 08  PLAYMUSIC:      LD      de,(STARTRAM)   
 01B4   1A                           LD      a,(de)   
-01B5   E6 1F                        AND      0x1f   
+01B5   E6 1F                        AND     0x1f   
 01B7   FE 1F                        CP      0x1f   
-01B9   C8                           RET      z   
+01B9   C8                           RET     z   
 01BA   00                           NOP         
 01BB   00                           NOP         
 01BC   FE 1E                        CP      0x1e   
@@ -335,37 +338,37 @@
 01C1   FE 00                        CP      0x00   
 01C3   CA E9 01                     JP      z,0x01e9   
 01C6   47                           LD      b,a   
-01C7   13                           INC      de   
-01C8   D5                           PUSH      de   
+01C7   13                           INC     de   
+01C8   D5                           PUSH    de   
 01C9   21 F8 01                     LD      hl,0x01f8   
-01CC   CD E3 01                     CALL      L1E3   
-01CF   F5                           PUSH      af   
+01CC   CD E3 01                     CALL    L1E3   
+01CF   F5                           PUSH    af   
 01D0   78                           LD      a,b   
 01D1   21 10 02                     LD      hl,0x0210   
-01D4   CD E3 01                     CALL      L1E3   
+01D4   CD E3 01                     CALL    L1E3   
 01D7   6F                           LD      l,a   
 01D8   26 00                        LD      h,0x00   
-01DA   F1                           POP      af   
+01DA   F1                           POP     af   
 01DB   4F                           LD      c,a   
-01DC   CD 93 01                     CALL      MAKETONE   
-01DF   D1                           POP      de   
+01DC   CD 93 01                     CALL    MAKETONE   
+01DF   D1                           POP     de   
 01E0   C3 B4 01                     JP      0x01b4   
 01E3   5F           L1E3:           LD      e,a   
 01E4   16 00                        LD      d,0x00   
-01E6   19                           ADD      hl,de   
+01E6   19                           ADD     hl,de   
 01E7   7E                           LD      a,(hl)   
 01E8   C9                           RET         
-01E9   D5                           PUSH      de   
+01E9   D5                           PUSH    de   
 01EA   11 00 10                     LD      de,0x1000   
-01ED   1B                           DEC      de   
+01ED   1B                           DEC     de   
 01EE   7A                           LD      a,d   
 01EF   B3                           OR      e   
 01F0   C2 ED 01                     JP      nz,0x01ed   
-01F3   D1                           POP      de   
-01F4   13                           INC      de   
+01F3   D1                           POP     de   
+01F4   13                           INC     de   
 01F5   C3 B4 01                     JP      0x01b4   
-01F8   8C                           ADC      a,h   
-01F9   83                           ADD      a,e   
+01F8   8C                           ADC     a,h   
+01F9   83                           ADD     a,e   
 01FA   7C                           LD      a,h   
 01FB   75                           LD      (hl),l   
 01FC   70                           LD      (hl),b   
@@ -378,25 +381,25 @@
 0203   48                           LD      c,b   
 0204   45                           LD      b,l   
 0205   41                           LD      b,c   
-0206   3C                           INC      a   
-0207   39                           ADD      hl,sp   
+0206   3C                           INC     a   
+0207   39                           ADD     hl,sp   
 0208   36 32                        LD      (hl),0x32   
 020A   2F                           CPL         
-020B   2C                           INC      l   
+020B   2C                           INC     l   
 020C   2A 27 25                     LD      hl,(0x2527)   
-020F   23                           INC      hl   
-0210   19                           ADD      hl,de   
+020F   23                           INC     hl   
+0210   19                           ADD     hl,de   
 0211   1A                           LD      a,(de)   
-0212   1C                           INC      e   
-0213   1D                           DEC      e   
+0212   1C                           INC     e   
+0213   1D                           DEC     e   
 0214   1E 20                        LD      e,0x20   
-0216   23                           INC      hl   
-0217   25                           DEC      h   
+0216   23                           INC     hl   
+0217   25                           DEC     h   
 0218   27                           DAA         
-0219   29                           ADD      hl,hl   
-021A   2C                           INC      l   
+0219   29                           ADD     hl,hl   
+021A   2C                           INC     l   
 021B   2E 31                        LD      l,0x31   
-021D   33                           INC      sp   
+021D   33                           INC     sp   
 021E   37                           SCF         
 021F   3A 3D 41                     LD      a,(0x413d)   
 0222   45                           LD      b,l   
@@ -405,7 +408,7 @@
 0225   52                           LD      d,d   
 0226   57                           LD      d,a   
 0227   5C                           LD      e,h   
-0228   10 FF                        DJNZ      0x0229   
+0228   10 FF                        DJNZ    0x0229   
 022A   FF                           DB      0xFF   
 022B   FF                           DB      0xFF   
 022C   FF                           DB      0xFF   
@@ -468,34 +471,34 @@
 0278   06 06                        LD      b,0x06   
 027A   21 F1 0F                     LD      hl,DISPLAY   
 027D   36 00                        LD      (hl),0x00   
-027F   23                           INC      hl   
-0280   10 FB                        DJNZ      0x027d   
+027F   23                           INC     hl   
+0280   10 FB                        DJNZ    0x027d   
 0282   06 06                        LD      b,0x06   
 0284   11 F7 0F                     LD      de,ADDRESS   
 0287   21 F6 0F                     LD      hl,0x0ff6   
 028A   7E                           LD      a,(hl)   
 028B   12                           LD      (de),a   
-028C   2B                           DEC      hl   
-028D   1B                           DEC      de   
-028E   10 FA                        DJNZ      0x028a   
+028C   2B                           DEC     hl   
+028D   1B                           DEC     de   
+028E   10 FA                        DJNZ    0x028a   
 0290   FD 7E 00                     LD      a,(iy+0)   
-0293   FD 23                        INC      iy   
-0295   E6 1F                        AND      0x1f   
+0293   FD 23                        INC     iy   
+0295   E6 1F                        AND     0x1f   
 0297   FE 1F                        CP      0x1f   
-0299   C8                           RET      z   
+0299   C8                           RET     z   
 029A   FE 1E                        CP      0x1e   
 029C   28 D2                        JR      z,BANNER   
 029E   21 B3 02                     LD      hl,CHARSEGTBL   
-02A1   CD E3 01                     CALL      L1E3   
+02A1   CD E3 01                     CALL    L1E3   
 02A4   32 F1 0F                     LD      (DISPLAY),a   
 02A7   3E 80                        LD      a,0x80   
-02A9   F5                           PUSH      af   
-02AA   CD 40 01                     CALL      SCANDISP   
-02AD   F1                           POP      af   
-02AE   3D                           DEC      a   
+02A9   F5                           PUSH    af   
+02AA   CD 40 01                     CALL    SCANDISP   
+02AD   F1                           POP     af   
+02AE   3D                           DEC     a   
 02AF   20 F8                        JR      nz,0x02a9   
 02B1   18 CF                        JR      0x0282   
-02B3   00           CHARSEGTBL      :   D   B   0x00        ;00 SPACE
+02B3   00           CHARSEGTBL:     DB      0x00            ;00 SPACE
 02B4   6F                           DB      0x6F            ;01 A
 02B5   E6                           DB      0xE6            ;02 B
 02B6   C3                           DB      0xC3            ;03 C
@@ -525,7 +528,7 @@
 02CE   00                           DB      0x00            
 02CF   00                           DB      0x00            
 02D0   00                           DB      0x00            
-02D1   08           WELCOME:         DB      0x08            ;h
+02D1   08           WELCOME:        DB      0x08            ;h
 02D2   05                           DB      0x05            ;e
 02D3   0C                           DB      0x0c            ;l
 02D4   0C                           DB      0x0c            ;l
@@ -604,15 +607,15 @@
 031D   FF                           DB      0xff       
 031E   FF                           DB      0xff   
 031F   FF                           DB      0xff   
-0320   DD 21 F1 0F  INVADERS:         LD      ix,DISPLAY   
-0324   AF                           XOR      a   
+0320   DD 21 F1 0F  INVADERS:       LD      ix,DISPLAY   
+0324   AF                           XOR     a   
 0325   32 FA 0F                     LD      (KEYFLAG),a   
 0328   32 FB 0F                     LD      (0x0ffb),a   
 032B   06 06                        LD      b,0x06   
 032D   21 F1 0F                     LD      hl,DISPLAY   
 0330   36 00                        LD      (hl),0x00   
-0332   23                           INC      hl   
-0333   10 FB                        DJNZ      0x0330   
+0332   23                           INC     hl   
+0333   10 FB                        DJNZ    0x0330   
 0335   3A F5 0F                     LD      a,(0x0ff5)   
 0338   FE 00                        CP      0x00   
 033A   20 37                        JR      nz,0x0373   
@@ -621,43 +624,43 @@
 0342   06 04                        LD      b,0x04   
 0344   7E                           LD      a,(hl)   
 0345   12                           LD      (de),a   
-0346   2B                           DEC      hl   
-0347   1B                           DEC      de   
-0348   10 FA                        DJNZ      0x0344   
+0346   2B                           DEC     hl   
+0347   1B                           DEC     de   
+0348   10 FA                        DJNZ    0x0344   
 034A   ED 5F                        LD      a,r   
-034C   CD B5 03                     CALL      INVS1   
+034C   CD B5 03                     CALL    INVS1   
 034F   32 F1 0F                     LD      (DISPLAY),a   
 0352   3E 00                        LD      a,0x00   
 0354   00                           NOP         
-0355   F5                           PUSH      af   
+0355   F5                           PUSH    af   
 0356   3E FF                        LD      a,0xff   
 0358   ED 47                        LD      i,a   
 035A   3A FB 0F                     LD      a,(0x0ffb)   
-035D   CD B5 03                     CALL      INVS1   
+035D   CD B5 03                     CALL    INVS1   
 0360   32 F6 0F                     LD      (0x0ff6),a   
-0363   CD 40 01                     CALL      SCANDISP   
+0363   CD 40 01                     CALL    SCANDISP   
 0366   ED 57                        LD      a,i   
 0368   FE FF                        CP      0xff   
-036A   C4 8E 03                     CALL      nz,L38E   
-036D   F1                           POP      af   
-036E   3D                           DEC      a   
+036A   C4 8E 03                     CALL    nz,L38E   
+036D   F1                           POP     af   
+036E   3D                           DEC     a   
 036F   20 E4                        JR      nz,0x0355   
 0371   18 C2                        JR      0x0335   
-0373   CD 8E 01                     CALL      BEEP   
+0373   CD 8E 01                     CALL    BEEP   
 0376   06 06                        LD      b,0x06   
 0378   21 F1 0F                     LD      hl,DISPLAY   
 037B   36 00                        LD      (hl),0x00   
-037D   23                           INC      hl   
-037E   10 FB                        DJNZ      0x037b   
+037D   23                           INC     hl   
+037E   10 FB                        DJNZ    0x037b   
 0380   3A FA 0F                     LD      a,(KEYFLAG)   
 0383   21 F3 0F                     LD      hl,DISPLAY2   
-0386   CD 15 01                     CALL      WRITEHEX   
-0389   CD 31 01                     CALL      GETKEY   
+0386   CD 15 01                     CALL    WRITEHEX   
+0389   CD 31 01                     CALL    GETKEY   
 038C   18 92                        JR      INVADERS   
 038E   FE 10        L38E:           CP      0x10   
 0390   20 08                        JR      nz,0x039a   
 0392   3A FB 0F                     LD      a,(0x0ffb)   
-0395   3C                           INC      a   
+0395   3C                           INC     a   
 0396   32 FB 0F                     LD      (0x0ffb),a   
 0399   C9                           RET         
 039A   3A F6 0F                     LD      a,(0x0ff6)   
@@ -669,16 +672,17 @@
 03A5   20 0A                        JR      nz,0x03b1   
 03A7   36 00                        LD      (hl),0x00   
 03A9   3A FA 0F                     LD      a,(KEYFLAG)   
-03AC   3C                           INC      a   
+03AC   3C                           INC     a   
 03AD   27                           DAA         
 03AE   32 FA 0F                     LD      (KEYFLAG),a   
-03B1   2B                           DEC      hl   
-03B2   10 EF                        DJNZ      0x03a3   
+03B1   2B                           DEC     hl   
+03B2   10 EF                        DJNZ    0x03a3   
 03B4   C9                           RET         
-03B5   E6 07        INVS1:          AND      0x07   
-03B7   CD 26 01                     CALL      HEX2SEGS   
+03B5   E6 07        INVS1:          AND     0x07   
+03B7   CD 26 01                     CALL    HEX2SEGS   
 03BA   C9                           RET         
-03BB   16 0E        NIMLOSE:         DB     0x16,0x0E       ;y o
+
+03BB   16 0E        NIMLOSE:        DB      0x16,0x0E       ;y o
 03BD   14                           DB      0x14            ;u
 03BE   00                           DB      0x00    
 03BF   0C                           DB      0x0C            ;l
@@ -711,16 +715,16 @@
 03DE   FF                           DB      0xFF   
 03DF   FF                           DB      0xFF   
 03E0   DD 21 F1 0F  NIM:            LD      ix,DISPLAY      ;ix = display[0]
-03E4   3E 23                        LD      a,0x23          ; 23 matches in BCD?
+03E4   3E 23                        LD      a,0x23          ;23 matches in BCD?
 03E6   32 FA 0F                     LD      (KEYFLAG),a     ;save in total matches?
 03E9   21 F1 0F                     LD      hl,DISPLAY      ;hl = DISPLAY
 03EC   06 06                        LD      b,0x06          ;num digits?
 03EE   36 00                        LD      (hl),0x00       ;store 0 at DISPLAY
-03F0   23           NIMLOOP1:         INC      hl           ;point to next digit
-03F1   10 FD                        DJNZ      NIMLOOP1      ;b-- if b > 0 jump to NIMLOOP1
+03F0   23           NIMLOOP1:       INC     hl              ;point to next digit
+03F1   10 FD                        DJNZ    NIMLOOP1        ;b-- if b > 0 jump to NIMLOOP1
 03F3   1E 00                        LD      e,0x00          ; e = 0
-03F5   CD 66 04                     CALL      NIMDISPLAY   
-03F8   CD 31 01                     CALL      GETKEY   
+03F5   CD 66 04                     CALL    NIMDISPLAY   
+03F8   CD 31 01                     CALL    GETKEY   
 03FB   ED 57                        LD      a,i   
 03FD   FE 04                        CP      0x04   
 03FF   30 F4                        JR      nc,0x03f5   
@@ -731,56 +735,56 @@
 0409   BB                           CP      e   
 040A   28 44                        JR      z,0x0450   
 040C   38 42                        JR      c,0x0450   
-040E   93                           SUB      e   
+040E   93                           SUB     e   
 040F   27                           DAA         
 0410   32 FA 0F                     LD      (KEYFLAG),a   
-0413   CD 66 04                     CALL      NIMDISPLAY   
+0413   CD 66 04                     CALL    NIMDISPLAY   
 0416   21 F6 0F                     LD      hl,0x0ff6   
 0419   36 AE                        LD      (hl),0xae   
 041B   16 00                        LD      d,0x00   
-041D   CD 40 01                     CALL      SCANDISP   
-0420   15                           DEC      d   
+041D   CD 40 01                     CALL    SCANDISP   
+0420   15                           DEC     d   
 0421   20 FA                        JR      nz,0x041d   
 0423   3A FA 0F                     LD      a,(KEYFLAG)   
 0426   FE 01                        CP      0x01   
 0428   28 2C                        JR      z,0x0456   
-042A   3D                           DEC      a   
+042A   3D                           DEC     a   
 042B   27                           DAA         
-042C   D6 04                        SUB      0x04   
+042C   D6 04                        SUB     0x04   
 042E   27                           DAA         
 042F   30 FB                        JR      nc,0x042c   
-0431   C6 04                        ADD      a,0x04   
+0431   C6 04                        ADD     a,0x04   
 0433   27                           DAA         
 0434   FE 00                        CP      0x00   
 0436   28 10                        JR      z,0x0448   
 0438   5F           L438:           LD      e,a   
 0439   3A FA 0F                     LD      a,(KEYFLAG)   
-043C   93                           SUB      e   
+043C   93                           SUB     e   
 043D   27                           DAA         
 043E   32 FA 0F                     LD      (KEYFLAG),a   
 0441   21 F6 0F                     LD      hl,0x0ff6   
 0444   36 28                        LD      (hl),0x28   
 0446   18 AD                        JR      0x03f5   
 0448   ED 5F                        LD      a,r   
-044A   E6 03                        AND      0x03   
+044A   E6 03                        AND     0x03   
 044C   28 28                        JR      z,L476   
 044E   18 E8                        JR      L438   
 0450   11 BB 03                     LD      de,NIMLOSE   
 0453   C3 59 04                     JP      L459   
 0456   11 CC 03                     LD      de,NIMWIN   
 0459   ED 53 00 08  L459:           LD      (STARTRAM),de   
-045D   CD 70 02                     CALL      BANNER   
-0460   CD 31 01                     CALL      GETKEY   
+045D   CD 70 02                     CALL    BANNER   
+0460   CD 31 01                     CALL    GETKEY   
 0463   C3 E0 03                     JP      0x03e0   
-0466   21 F1 0F     NIMDISPLAY      :   L   D   hl,DISPLAY   
+0466   21 F1 0F     NIMDISPLAY:     LD      hl,DISPLAY   
 0469   3A FA 0F                     LD      a,(KEYFLAG)     ;num matches
-046C   CD 15 01                     CALL      WRITEHEX   
-046F   23                           INC      hl   
+046C   CD 15 01                     CALL    WRITEHEX   
+046F   23                           INC     hl   
 0470   7B                           LD      a,e   
-0471   CD 26 01                     CALL      HEX2SEGS   
+0471   CD 26 01                     CALL    HEX2SEGS   
 0474   77                           LD      (hl),a   
 0475   C9                           RET         
-0476   3C           L476:           INC      a   
+0476   3C           L476:           INC     a   
 0477   C3 38 04                     JP      L438   
 047A   FF                           DB      0xFF   
 047B   14           LUNAS1:         DB      0x14            ;D
@@ -791,6 +795,7 @@
 0480   12                           DB      0x12            ;C
 0481   14                           DB      0x14            ;D
 0482   10 1F                        DB      0x10,0x1F       ; A# END
+
 0484   01 11 01     LUNAS2:         DB      0x01,0x11,0x01  ;G B G
 0487   11 01 11                     DB      0x11,0x01,0x11  ;B G B
 048A   1F                           DB      0x1F            ;END
@@ -799,42 +804,42 @@
 048D   FF                           DB      0xFF   
 048E   FF                           DB      0xFF   
 048F   FF                           DB      0xFF   
-0490   DD 21 F1 0F  LUNALANDER      :   L   D   ix,DISPLAY   
+0490   DD 21 F1 0F  LUNALANDER:     LD      ix,DISPLAY   
 0494   FD 21 00 08                  LD      iy,STARTRAM   
 0498   3E 50                        LD      a,0x50   
 049A   FD 77 00                     LD      (iy+0),a   
 049D   3E 20                        LD      a,0x20   
 049F   FD 77 01                     LD      (iy+1),a   
-04A2   AF                           XOR      a   
+04A2   AF                           XOR     a   
 04A3   FD 77 02                     LD      (iy+2),a   
 04A6   21 F1 0F                     LD      hl,DISPLAY   
 04A9   06 06                        LD      b,0x06   
 04AB   36 00                        LD      (hl),0x00   
-04AD   23                           INC      hl   
-04AE   10 FB                        DJNZ      0x04ab   
+04AD   23                           INC     hl   
+04AE   10 FB                        DJNZ    0x04ab   
 04B0   16 80                        LD      d,0x80   
 04B2   FD 7E 01                     LD      a,(iy+1)   
 04B5   21 F1 0F                     LD      hl,DISPLAY   
-04B8   CD 15 01                     CALL      WRITEHEX   
-04BB   23                           INC      hl   
-04BC   23                           INC      hl   
+04B8   CD 15 01                     CALL    WRITEHEX   
+04BB   23                           INC     hl   
+04BC   23                           INC     hl   
 04BD   FD 7E 00                     LD      a,(iy+0)   
-04C0   CD 15 01                     CALL      WRITEHEX   
+04C0   CD 15 01                     CALL    WRITEHEX   
 04C3   3E FF                        LD      a,0xff   
 04C5   ED 47                        LD      i,a   
-04C7   CD 40 01                     CALL      SCANDISP   
+04C7   CD 40 01                     CALL    SCANDISP   
 04CA   ED 57                        LD      a,i   
 04CC   FE FF                        CP      0xff   
-04CE   C4 F3 04                     CALL      nz,L4F3   
-04D1   15                           DEC      d   
+04CE   C4 F3 04                     CALL    nz,L4F3   
+04D1   15                           DEC     d   
 04D2   C2 B2 04                     JP      nz,0x04b2   
 04D5   FD 7E 02                     LD      a,(iy+2)   
-04D8   D6 01                        SUB      0x01   
+04D8   D6 01                        SUB     0x01   
 04DA   27                           DAA         
 04DB   FD 77 02                     LD      (iy+2),a   
 04DE   47                           LD      b,a   
 04DF   FD 7E 00                     LD      a,(iy+0)   
-04E2   80                           ADD      a,b   
+04E2   80                           ADD     a,b   
 04E3   27                           DAA         
 04E4   FE 00                        CP      0x00   
 04E6   CA 11 05                     JP      z,0x0511   
@@ -844,12 +849,12 @@
 04F0   C3 B0 04                     JP      0x04b0   
 04F3   FD 7E 01     L4F3:           LD      a,(iy+1)   
 04F6   FE 00                        CP      0x00   
-04F8   C8                           RET      z   
-04F9   3D                           DEC      a   
+04F8   C8                           RET     z   
+04F9   3D                           DEC     a   
 04FA   27                           DAA         
 04FB   FD 77 01                     LD      (iy+1),a   
 04FE   FD 7E 02                     LD      a,(iy+2)   
-0501   C6 02                        ADD      a,0x02   
+0501   C6 02                        ADD     a,0x02   
 0503   27                           DAA         
 0504   FD 77 02                     LD      (iy+2),a   
 0507   C9                           RET         
@@ -858,9 +863,10 @@
 050F   18 03                        JR      0x0514   
 0511   11 7B 04                     LD      de,LUNAS1   
 0514   ED 53 00 08                  LD      (STARTRAM),de   
-0518   CD B0 01                     CALL      PLAYMUSIC   
-051B   CD 31 01                     CALL      GETKEY   
+0518   CD B0 01                     CALL    PLAYMUSIC   
+051B   CD 31 01                     CALL    GETKEY   
 051E   C3 90 04                     JP      0x0490   
+
 0521   FF                           DB      0xFF   
 0522   FF                           DB      0xFF   
 0523   FF                           DB      0xFF   
@@ -943,19 +949,20 @@
 057D   FF                           DB      0xFF   
 057E   FF                           DB      0xFF   
 057F   FF                           DB      0xFF   
-0580   21 00 08     STARTMON2:         LD      hl,STARTRAM   
+
+0580   21 00 08     STARTMON2:      LD      hl,STARTRAM   
 0583   31 D0 0F                     LD      sp,0x0fd0   
 0586   DD 21 F1 0F                  LD      ix,DISPLAY   
 058A   22 F7 0F                     LD      (ADDRESS),hl   
-058D   AF                           XOR      a   
+058D   AF                           XOR     a   
 058E   32 F9 0F                     LD      (MODE),a   
 0591   32 FA 0F                     LD      (KEYFLAG),a   
 0594   0E 0A                        LD      c,0x0a   
 0596   21 50 00                     LD      hl,0x0050   
-0599   CD 93 01                     CALL      MAKETONE   
+0599   CD 93 01                     CALL    MAKETONE   
 059C   0E 20                        LD      c,0x20   
 059E   21 30 00                     LD      hl,0x0030   
-05A1   CD 93 01                     CALL      MAKETONE   
+05A1   CD 93 01                     CALL    MAKETONE   
 05A4   C3 E3 00                     JP      DATADISP   
 05A7   FF                           DB      0xFF   
 05A8   FF                           DB      0xFF   
@@ -966,6 +973,7 @@
 05AD   FF                           DB      0xFF   
 05AE   FF                           DB      0xFF   
 05AF   FF                           DB      0xFF   
+
 05B0   21 00 08                     LD      hl,STARTRAM     ;sequencer
 05B3   11 00 0B                     LD      de,0x0b00   
 05B6   7E           L5B6:           LD      a,(hl)   
@@ -973,23 +981,23 @@
 05B9   C2 C2 05                     JP      nz,0x05c2   
 05BC   21 00 08                     LD      hl,STARTRAM   
 05BF   C3 B6 05                     JP      L5B6   
-05C2   D3 03                        OUT      (0x03),a   
+05C2   D3 03                        OUT     (0x03),a   
 05C4   1A                           LD      a,(de)   
 05C5   FE FF                        CP      0xff   
 05C7   C2 D0 05                     JP      nz,0x05d0   
 05CA   11 00 0B                     LD      de,0x0b00   
 05CD   C3 C4 05                     JP      0x05c4   
-05D0   D3 04                        OUT      (0x04),a   
-05D2   CD E1 05                     CALL      L5E1   
-05D5   13                           INC      de   
+05D0   D3 04                        OUT     (0x04),a   
+05D2   CD E1 05                     CALL    L5E1   
+05D5   13                           INC     de   
 05D6   1A                           LD      a,(de)   
-05D7   D3 04                        OUT      (0x04),a   
-05D9   CD E1 05                     CALL      L5E1   
-05DC   13                           INC      de   
-05DD   23                           INC      hl   
+05D7   D3 04                        OUT     (0x04),a   
+05D9   CD E1 05                     CALL    L5E1   
+05DC   13                           INC     de   
+05DD   23                           INC     hl   
 05DE   C3 B6 05                     JP      L5B6   
 05E1   01 FF 03     L5E1:           LD      bc,0x03ff   
-05E4   0B                           DEC      bc   
+05E4   0B                           DEC     bc   
 05E5   78                           LD      a,b   
 05E6   B1                           OR      c   
 05E7   C2 E4 05                     JP      nz,0x05e4   
@@ -999,7 +1007,7 @@
 05ED   FF                           DB      0xFF   
 05EE   FF                           DB      0xFF   
 05EF   FF                           DB      0xFF   
-05F0   ED 73 D8 0F  STARTMON:         LD    (0x0fd8),sp     ;save sp here, why?
+05F0   ED 73 D8 0F  STARTMON:       LD      (0x0fd8),sp     ;save sp here, why?
 05F4   31 F0 0F                     LD      sp,0x0ff0       ;init stack pointer
 05F7                                                        ;save all registers, why?
 05F7   F5                           PUSH    af              ;save af
@@ -1010,12 +1018,12 @@
 05FD   FD E5                        PUSH    iy              ;save iy
 05FF   08                           EX      af,af'            
 0600   D9                           EXX                     
-0601   F5                           PUSH      af            ;save af'
-0602   C5                           PUSH      bc            ;save bc'
-0603   D5                           PUSH      de            ;save de'
-0604   E5                           PUSH      hl            ;save hl'
+0601   F5                           PUSH    af              ;save af'
+0602   C5                           PUSH    bc              ;save bc'
+0603   D5                           PUSH    de              ;save de'
+0604   E5                           PUSH    hl              ;save hl'
 0605   ED 57                        LD      a,i             
-0607   F5                           PUSH      af            ;save i
+0607   F5                           PUSH    af              ;save i
 0608   C3 80 05                     JP      STARTMON2   
 060B   FF                           DB      0xFF   
 060C   FF                           DB      0xFF   
@@ -1494,19 +1502,19 @@
 07E5   C7                           RST     0x00   
 07E6   50                           LD      d,b   
 07E7   0A                           LD      a,(bc)   
-07E8   93                           SUB      e   
-07E9   C7                           RST      0x00   
+07E8   93                           SUB     e   
+07E9   C7                           RST     0x00   
 07EA   FB                           EI         
-07EB   C7                           RST      0x00   
-07EC   8D                           ADC      a,l   
-07ED   C6 BF                        ADD      a,0xbf   
-07EF   0D                           DEC      c   
+07EB   C7                           RST     0x00   
+07EC   8D                           ADC     a,l   
+07ED   C6 BF                        ADD     a,0xbf   
+07EF   0D                           DEC     c   
 07F0   B1                           OR      c   
-07F1   C6 43                        ADD      a,0x43   
+07F1   C6 43                        ADD     a,0x43   
 07F3   01 0B BC                     LD      bc,0xbc0b   
 07F6   00                           NOP         
 07F7   0F                           RRCA         
-07F8   E0                           RET      po   
+07F8   E0                           RET     po   
 07F9   0F                           RRCA         
 07FA   6D                           LD      l,l   
 07FB   01 43 01                     LD      bc,0x0143   
