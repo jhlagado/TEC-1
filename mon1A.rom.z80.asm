@@ -26,10 +26,12 @@
                     SLOWSEQ:        EQU     0x0800          ;fast and slow sequencer data 
                     FASTSEQ:        EQU     0x0b00          ;see SEQUENCER code
                     ENDOFSEQ:       EQU     0xFF            ;end of sequence
-                    REPEATTEXT:   EQU     0x1E            ;repeat showing banner
-                    ENDOFTEXT:    EQU     0x1F            ;end of banner
+                    REPEATTEXT:     EQU     0x1E            ;repeat showing banner
+                    ENDOFTEXT:      EQU     0x1F            ;end of banner
                     REPEATTUNE:     EQU     0x1E            ;repeat playing tune
                     ENDOFTUNE:      EQU     0x1F            ;end of tune
+
+0000                NIMMATCHES:     EQU     0x0ffa          ;nim: number of matches
 
 0000                                ORG     0x0000   
 0000   C3 F0 05                     JP      STARTMON   
@@ -518,7 +520,7 @@
 
 0282   06 06        STXTLOOP:       LD      b,0x06          ;b = num of display digits
 0284   11 F7 0F                     LD      de,DISPLAY6     ;de = last display digit 
-0287   21 F6 0F                     LD      hl,0x0ff6       ;hl = second last display digit
+0287   21 F6 0F                     LD      hl,DISPLAY5       ;hl = second last display digit
 
                                                             ;shift display one digit to the left    
 028A   7E           STXT2:          LD      a,(hl)          ;a = (hl)
@@ -691,7 +693,7 @@
 0358   ED 47                        LD      i,a   
 035A   3A FB 0F                     LD      a,(0x0ffb)   
 035D   CD B5 03                     CALL    INVS1   
-0360   32 F6 0F                     LD      (0x0ff6),a   
+0360   32 F6 0F                     LD      (DISPLAY5),a   
 0363   CD 40 01                     CALL    SCANDISP   
 0366   ED 57                        LD      a,i   
 0368   FE FF                        CP      0xff   
@@ -717,7 +719,7 @@
 0395   3C                           INC     a   
 0396   32 FB 0F                     LD      (0x0ffb),a   
 0399   C9                           RET         
-039A   3A F6 0F                     LD      a,(0x0ff6)   
+039A   3A F6 0F                     LD      a,(DISPLAY5)   
 039D   4F                           LD      c,a   
 039E   21 F5 0F                     LD      hl,0x0ff5   
 03A1   06 05                        LD      b,0x05   
@@ -771,77 +773,94 @@
 
                     NIM:            ORG     0x03E0
 03E0   DD 21 F1 0F                  LD      ix,DISPLAY      ;ix = display[0]
-03E4   3E 23                        LD      a,0x23          ;23 matches in BCD?
-03E6   32 FA 0F                     LD      (KEYFLAG),a     ;save in total matches?
+03E4   3E 23                        LD      a,0x23          ;23 matches in BCD
+03E6   32 FA 0F                     LD      (NIMMATCHES),a  ;save in total matches
+
+                                                            ;clear display    
 03E9   21 F1 0F                     LD      hl,DISPLAY      ;hl = DISPLAY
-03EC   06 06                        LD      b,0x06          ;num digits?
+03EC   06 06                        LD      b,0x06          ;num digits
 03EE   36 00                        LD      (hl),0x00       ;store 0 at DISPLAY
 03F0   23           NIMLOOP1:       INC     hl              ;point to next digit
 03F1   10 FD                        DJNZ    NIMLOOP1        ;b-- if b > 0 jump to NIMLOOP1
 03F3   1E 00                        LD      e,0x00          ; e = 0
-03F5   CD 66 04                     CALL    NIMDISPLAY   
-03F8   CD 31 01                     CALL    GETKEY   
-03FB   ED 57                        LD      a,i   
-03FD   FE 04                        CP      0x04   
-03FF   30 F4                        JR      nc,0x03f5   
-0401   FE 00                        CP      0x00   
-0403   28 F0                        JR      z,0x03f5   
-0405   5F                           LD      e,a   
-0406   3A FA 0F                     LD      a,(KEYFLAG)   
-0409   BB                           CP      e   
-040A   28 44                        JR      z,0x0450   
-040C   38 42                        JR      c,0x0450   
-040E   93                           SUB     e   
-040F   27                           DAA         
-0410   32 FA 0F                     LD      (KEYFLAG),a   
-0413   CD 66 04                     CALL    NIMDISPLAY   
-0416   21 F6 0F                     LD      hl,0x0ff6   
-0419   36 AE                        LD      (hl),0xae   
-041B   16 00                        LD      d,0x00   
-041D   CD 40 01                     CALL    SCANDISP   
-0420   15                           DEC     d   
-0421   20 FA                        JR      nz,0x041d   
-0423   3A FA 0F                     LD      a,(KEYFLAG)   
-0426   FE 01                        CP      0x01   
-0428   28 2C                        JR      z,0x0456   
-042A   3D                           DEC     a   
-042B   27                           DAA         
-042C   D6 04                        SUB     0x04   
-042E   27                           DAA         
-042F   30 FB                        JR      nc,0x042c   
+
+03F5   CD 66 04     NIMLOOP2:       CALL    NIMDISPLAY      ;render nim state
+03F8   CD 31 01                     CALL    GETKEY          ;get key (blocking) 
+03FB   ED 57                        LD      a,i             ;a = key
+03FD   FE 04                        CP      0x04            ;if (key >= 4)
+03FF   30 F4                        JR      nc,NIMLOOP2     ;  goto NIMLOOP2    
+0401   FE 00                        CP      0x00            ;if (key == 0) 
+0403   28 F0                        JR      z,0x03f5        ;  goto NIMLOOP2
+0405   5F                           LD      e,a             ;e = choice
+0406   3A FA 0F                     LD      a,(NIMMATCHES)  ;a = num_matches 
+0409   BB                           CP      e               ;if (num_matches <= e)
+040A   28 44                        JR      z,NIMLOSER      ;  goto NIMLOSER
+040C   38 42                        JR      c,NIMLOSER   
+040E   93                           SUB     e               ;a = a - choice
+040F   27                           DAA                     ;BCD adjust
+0410   32 FA 0F                     LD      (NIMMATCHES),a  ;update 
+0413   CD 66 04                     CALL    NIMDISPLAY      ;render nim state
+0416   21 F6 0F                     LD      hl,DISPLAY5     ;
+0419   36 AE                        LD      (hl),0xae       ;letter 'Y' for "you chose"
+
+041B   16 00                        LD      d,0x00          
+041D   CD 40 01     NIMLOOP3:       CALL    SCANDISP        ;scan LEDS 255 times 
+0420   15                           DEC     d               
+0421   20 FA                        JR      nz,NIMLOOP3     
+
+0423   3A FA 0F                     LD      a,(NIMMATCHES)  ;a = num_matches 
+0426   FE 01                        CP      0x01            ;if (a == 1)
+0428   28 2C                        JR      z,0x0456        ;   goto NIMWINNER
+042A   3D                           DEC     a               ;a = num_matches - 1
+042B   27                           DAA                     ;BCD adjust
+
+042C   D6 04        NIMLOOP4:       SUB     0x04            ;a -= 4
+042E   27                           DAA                     ;BCD adjust
+042F   30 FB                        JR      nc,NIMLOOP4            
 0431   C6 04                        ADD     a,0x04   
-0433   27                           DAA         
-0434   FE 00                        CP      0x00   
-0436   28 10                        JR      z,0x0448   
-0438   5F           L438:           LD      e,a   
-0439   3A FA 0F                     LD      a,(KEYFLAG)   
-043C   93                           SUB     e   
-043D   27                           DAA         
-043E   32 FA 0F                     LD      (KEYFLAG),a   
-0441   21 F6 0F                     LD      hl,0x0ff6   
-0444   36 28                        LD      (hl),0x28   
-0446   18 AD                        JR      0x03f5   
-0448   ED 5F                        LD      a,r   
-044A   E6 03                        AND     0x03   
-044C   28 28                        JR      z,L476   
-044E   18 E8                        JR      L438   
-0450   11 BB 03                     LD      de,NIMLOSE   
-0453   C3 59 04                     JP      L459   
-0456   11 CC 03                     LD      de,NIMWIN   
-0459   ED 53 00 08  L459:           LD      (STARTRAM),de   
+0433   27                           DAA                     ;a = (num_matches - 1) % 4     
+
+0434   FE 00                        CP      0x00            ;if (a == 0) //no move available
+0436   28 10                        JR      z,NIMRAND       ;  goto random_move
+
+0438   5F           NIMRESUME:      LD      e,a             ;e = a -- computer's choice
+0439   3A FA 0F                     LD      a,(NIMMATCHES)  ;a = num_matches 
+043C   93                           SUB     e               ;a = a - choice
+043D   27                           DAA                     ;BCD adjust
+043E   32 FA 0F                     LD      (NIMMATCHES),a  ;update 
+0441   21 F6 0F                     LD      hl,DISPLAY5   
+0444   36 28                        LD      (hl),0x28       ;letter 'I' for "I chose"
+0446   18 AD                        JR      NIMLOOP2   
+
+0448   ED 5F        NIMRAND:        LD      a,r             ;get "random" num from refresh register
+044A   E6 03                        AND     0x03            ;truncate range to 0-3
+044C   28 28                        JR      z,NIMADJUST     ;if choice == 0 choice++
+044E   18 E8                        JR      NIMRESUME       ;use choice
+
+0450   11 BB 03     NIMLOSER:       LD      de,NIMLOSE      ;show loser text
+0453   C3 59 04                     JP      NIMTEXT
+
+0456   11 CC 03     NIMWINNER:      LD      de,NIMWIN       ;show winner text
+
+0459   ED 53 00 08  NIMTEXT:        LD      (STARTRAM),de   ;show text
 045D   CD 70 02                     CALL    SHOWTEXT   
-0460   CD 31 01                     CALL    GETKEY   
-0463   C3 E0 03                     JP      0x03e0   
+0460   CD 31 01                     CALL    GETKEY          ;wait for key
+0463   C3 E0 03                     JP      NIM   
+
+                                                            ;subroutine: display nim state
+                                                            ;e = choice
+                                                            ;destroys a, hl
 0466   21 F1 0F     NIMDISPLAY:     LD      hl,DISPLAY   
-0469   3A FA 0F                     LD      a,(KEYFLAG)     ;num matches
-046C   CD 15 01                     CALL    WRITEHEX   
-046F   23                           INC     hl   
-0470   7B                           LD      a,e   
-0471   CD 26 01                     CALL    HEX2SEGS   
-0474   77                           LD      (hl),a   
-0475   C9                           RET         
-0476   3C           L476:           INC     a   
-0477   C3 38 04                     JP      L438   
+0469   3A FA 0F                     LD      a,(NIMMATCHES)  ;num matches
+046C   CD 15 01                     CALL    WRITEHEX        ;write BCD values
+046F   23                           INC     hl              ;blank digit
+0470   7B                           LD      a,e             
+0471   CD 26 01                     CALL    HEX2SEGS        ;a = 7segs(e) 
+0474   77                           LD      (hl),a          ;(hl) = 7segs
+0475   C9                           RET                     ;return
+
+0476   3C           NIMADJUST:      INC     a               ;turn 0 into 1
+0477   C3 38 04                     JP      NIMRESUME       ;resume
 
 047A   FF                           DB      0xFF   
 
@@ -1014,19 +1033,19 @@
 057E   FF                           DB      0xFF   
 057F   FF                           DB      0xFF   
 
-0580   21 00 08     STARTMON2:      LD      hl,STARTRAM   
-0583   31 D0 0F                     LD      sp,0x0fd0   
-0586   DD 21 F1 0F                  LD      ix,DISPLAY   
-058A   22 F7 0F                     LD      (ADDRESS),hl   
+0580   21 00 08     STARTMON2:      LD      hl,STARTRAM     
+0583   31 D0 0F                     LD      sp,0x0fd0       ;set stack to end of ram - 32
+0586   DD 21 F1 0F                  LD      ix,DISPLAY      ;ix = DISPLAY
+058A   22 F7 0F                     LD      (ADDRESS),hl    ;address_ptr = STARTRAM
 058D   AF                           XOR     a   
-058E   32 F9 0F                     LD      (MODE),a   
-0591   32 FA 0F                     LD      (KEYFLAG),a   
-0594   0E 0A                        LD      c,0x0a   
-0596   21 50 00                     LD      hl,0x0050   
-0599   CD 93 01                     CALL    PLAYTONE   
+058E   32 F9 0F                     LD      (MODE),a        ;MODE = ADDR
+0591   32 FA 0F                     LD      (KEYFLAG),a     ;KEYFLAG = false
+0594   0E 0A                        LD      c,0x0a          ;c = note E
+0596   21 50 00                     LD      hl,0x0050       ;hl = duration
+0599   CD 93 01                     CALL    PLAYTONE        ;beep 
 059C   0E 20                        LD      c,0x20   
 059E   21 30 00                     LD      hl,0x0030   
-05A1   CD 93 01                     CALL    PLAYTONE   
+05A1   CD 93 01                     CALL    PLAYTONE        ;beep
 05A4   C3 E3 00                     JP      DATADISP   
 05A7   FF                           DB      0xFF   
 05A8   FF                           DB      0xFF   
@@ -1073,12 +1092,15 @@
 05E6   B1                           OR      c               ;if (a | c == 0)
 05E7   C2 E4 05                     JP      nz,SEQDEL1      ;  loop SEQDEL1 
 05EA   C9                           RET                     ;return
+
 05EB   FF                           DB      0xFF   
 05EC   FF                           DB      0xFF   
 05ED   FF                           DB      0xFF   
 05EE   FF                           DB      0xFF   
 05EF   FF                           DB      0xFF   
-05F0   ED 73 D8 0F  STARTMON:       LD      (0x0fd8),sp     ;save sp here, why?
+
+                    STARTMON:       ORG     0x05F0
+05F0   ED 73 D8 0F                  LD      (0x0fd8),sp     ;save sp here, why?
 05F4   31 F0 0F                     LD      sp,0x0ff0       ;init stack pointer
 05F7                                                        ;save all registers, why?
 05F7   F5                           PUSH    af              ;save af
@@ -1096,6 +1118,7 @@
 0605   ED 57                        LD      a,i             
 0607   F5                           PUSH    af              ;save i
 0608   C3 80 05                     JP      STARTMON2   
+
 060B   FF                           DB      0xFF   
 060C   FF                           DB      0xFF   
 060D   FF                           DB      0xFF   
@@ -1779,15 +1802,15 @@ NIM:                03E0 DEFINED AT LINE 705
                     > USED AT LINE 25
 NIMLOOP1:           03F0 DEFINED AT LINE 711
                     > USED AT LINE 712
-L438:               0438 DEFINED AT LINE 748
+NIMRESUME:               0438 DEFINED AT LINE 748
                     > USED AT LINE 759
                     > USED AT LINE 776
-L459:               0459 DEFINED AT LINE 763
+NIMTEXT:               0459 DEFINED AT LINE 763
                     > USED AT LINE 761
 NIMDISPLAY:         0466 DEFINED AT LINE 767
                     > USED AT LINE 714
                     > USED AT LINE 729
-L476:               0476 DEFINED AT LINE 775
+NIMADJUST:               0476 DEFINED AT LINE 775
                     > USED AT LINE 758
 LUNAS1:             047B DEFINED AT LINE 778
                     > USED AT LINE 851
@@ -1801,10 +1824,10 @@ TUNE2:              0530 DEFINED AT LINE 871
                     > USED AT LINE 49
 STARTMON2:          0580 DEFINED AT LINE 938
                     > USED AT LINE 1011
-LOOPSEQ:               05B6 DEFINED AT LINE 963
+LOOPSEQ:            05B6 DEFINED AT LINE 963
                     > USED AT LINE 967
                     > USED AT LINE 982
-SEQDELAY:               05E1 DEFINED AT LINE 983
+SEQDELAY:           05E1 DEFINED AT LINE 983
                     > USED AT LINE 975
                     > USED AT LINE 979
 STARTMON:           05F0 DEFINED AT LINE 994
