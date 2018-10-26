@@ -65,11 +65,11 @@
 0026   FF                           DB      0xFF   
 0027   FF                           DB      0xFF   
 0028   21 30 02                     LD      hl,TUNE1        ;BAD IDEA! not needed
-002B   C3 41 00                     JP      STARTMUSIC   
+002B   C3 41 00                     JP      STARTTUNE   
 002E   FF                           DB      0xFF   
 002F   FF                           DB      0xFF   
 0030   21 30 05                     LD      hl,TUNE2        ;BAD IDEA! not needed
-0033   C3 41 00                     JP      STARTMUSIC   
+0033   C3 41 00                     JP      STARTTUNE   
 0036   FF                           DB      0xFF   
 0037   FF                           DB      0xFF   
 0038   C7                           RST     0x00            ;Maskable Interrupt Mode 1
@@ -81,8 +81,8 @@
 003E   FF                           DB      0xFF   
 003F   FF                           DB      0xFF   
 0040   FF                           DB      0xFF   
-0041   22 00 08     STARTMUSIC:     LD      (STARTRAM),hl   ;load address of tune from STARTRAM
-0044   C3 B0 01                     JP      PLAYMUSIC   
+0041   22 00 08     STARTTUNE:      LD      (STARTRAM),hl   ;load address of tune from STARTRAM
+0044   C3 B0 01                     JP      PLAYTUNE   
 0047   FF                           DB      0xFF   
 0048   FF                           DB      0xFF   
 0049   FF                           DB      0xFF   
@@ -133,12 +133,14 @@
 0080   FE 10                        CP      0x10   
 0082   DA 88 00                     JP      c,ADDRKEY       ;key is numeric
 0085   C3 E3 00                     JP      DATADISP        ;change to DATA_MODE
+
 0088   21 F7 0F     ADDRKEY:        LD      hl,ADDRESS   
 008B   CD 6F 01                     CALL    GETADDRKEY      ;getkey and clear 16 bits if !KEYFLAG
 008E   ED 6F                        RLD                     ;rotate left nibble (hl) <- a
 0090   23                           INC     hl              ;point to upper byte
 0091   ED 6F                        RLD                     ;rotate left nibble (hl) <- a
-0093   C3 DA 00                     JP      ADDRDISP        ;change to ADDR_MODE
+0093   C3 DA 00                     JP      ADDRDISP        ;change to ADDR_MODE, 
+
 0096   ED 57        WRITEDISP3:     LD      a,i             ;is DATA_MODE
 0098   FE 10                        CP      0x10   
 009A   DA B7 00                     JP      c,DATAKEY       ;key is numeric
@@ -153,28 +155,34 @@
 00AF   CA C6 00                     JP      z,DECADDR   
 00B2   FE 10                        CP      0x10            ;(+) KEY
 00B4   CA D0 00                     JP      z,INCADDR   
+
 00B7   2A F7 0F     DATAKEY:        LD      hl,(ADDRESS)   
 00BA   CD 7B 01                     CALL    GETDATAKEY      ;getkey and clear 16 bits if !KEYFLAG
 00BD   ED 6F                        RLD                     ;rotate left nibble (hl) <- a
-00BF   C3 E3 00                     JP      DATADISP   
-00C2   2A F7 0F     GOADDR:         LD      hl,(ADDRESS)   
-00C5   E9                           JP      (hl)   
-00C6   2A F7 0F     DECADDR:        LD      hl,(ADDRESS)   
+00BF   C3 E3 00                     JP      DATADISP         
+
+00C2   2A F7 0F     GOADDR:         LD      hl,(ADDRESS)    
+00C5   E9                           JP      (hl)            ;jump (ADDRESS)
+
+00C6   2A F7 0F     DECADDR:        LD      hl,(ADDRESS)    ;(ADDRESS)--
 00C9   2B                           DEC     hl   
 00CA   22 F7 0F                     LD      (ADDRESS),hl   
-00CD   C3 E3 00                     JP      DATADISP   
-00D0   2A F7 0F     INCADDR:        LD      hl,(ADDRESS)   
+00CD   C3 E3 00                     JP      DATADISP        
+
+00D0   2A F7 0F     INCADDR:        LD      hl,(ADDRESS)    ;(ADDRESS)++
 00D3   23                           INC     hl   
 00D4   22 F7 0F                     LD      (ADDRESS),hl   
-00D7   C3 E3 00                     JP      DATADISP   
+00D7   C3 E3 00                     JP      DATADISP 
+
 00DA   3E 00        ADDRDISP:       LD      a,0x00          ;0
 00DC   06 04                        LD      b,0x04          ;4 digits
 00DE   21 F3 0F                     LD      hl,DISPLAY2     ;display+2 offset for address
 00E1   18 07                        JR      WRITEDISP   
+
 00E3   3E 67        DATADISP:       LD      a,0x67          ;01100111
 00E5   06 02                        LD      b,0x02          ;two digits
 00E7   21 F1 0F                     LD      hl,DISPLAY      ;display+0 offset for data
-00EA                                                        ;WRITEDISP fall-through
+00EA                                                        ;goto WRITEDISP (fall-thru)
 
 00EA                                                        ;subroutine: write HEX values for ADDRESS and (ADDRESS)
 00EA                                                        ;updates mode i.e. data or address
@@ -281,51 +289,45 @@
 016E   47                           DB      0x47            ;F
 
 016F                                                        ;subroutine: getkey, check KEYFLAG
-016F                                                        ;if ((KEYFLAG)==false) {
-016F                                                        ;     clear (hl)
-016F                                                        ;     clear (hl+1)
-016F                                                        ;     (KEYFLAG) = true
-016F                                                        ;}   
-016F                                                        ;r   eturns key in a
-016F                                                        ;d   estroys: b
+                                                            ;if !(KEYFLAG) then blanks (hl) and (hl+1)
+016F                                                        ;returns key in a
+016F                                                        ;destroys: b
 016F   CD 7B 01     GETADDRKEY:     CALL    GETDATAKEY      ;get key
-0172   C0                           RET     nz   
-0173   23                           INC     hl   
-0174   3E 00                        LD      a,0x00   
-0176   77                           LD      (hl),a   
+0172   C0                           RET     nz              ; if ((KEYFLAG) == false) {
+0173   23                           INC     hl              ;   
+0174   3E 00                        LD      a,0x00          ;   
+0176   77                           LD      (hl),a          ;   (hl+1) = 0
 0177   2B                           DEC     hl   
-0178   ED 57                        LD      a,i   
+                                                            ; }
+0178   ED 57                        LD      a,i             ;
 017A   C9                           RET                     ;return (a=key)
 
 017B                                                        ;subroutine: getkey, check KEYFLAG
-017B                                                        ;    
-017B                                                        ;if ((KEYFLAG)==false) {
-017B                                                        ;     clear (hl)
-017B                                                        ;     (KEYFLAG) true
-017B                                                        ;}   
+017B                                                        ;if !(KEYFLAG) then blanks (hl)    
 017B                                                        ;returns key in a
 017B                                                        ;destroys: b
 017B   ED 57        GETDATAKEY:     LD      a,i    
 017D   47                           LD      b,a             ;b = key
 017E   3A FA 0F                     LD      a,(KEYFLAG)    
 0181   FE 00                        CP      0x00    
-0183   78                           LD      a,b             ;a = key
-0184   C0                           RET     nz              ;if (KEYFLAG == true) return a=key
-0185   AF                           XOR     a               ;else
-0186   77                           LD      (hl),a          ;(hl) = 0
+0183   78                           LD      a,b             
+0184   C0                           RET     nz              ; if ((KEYFLAG) == false){ 
+0185   AF                           XOR     a               ;
+0186   77                           LD      (hl),a          ;   (hl) = 0
 0187   3D                           DEC     a    
-0188   32 FA 0F                     LD      (KEYFLAG),a     ;(STORE) = FF
-018B   78                           LD      a,b             ;a = key
+0188   32 FA 0F                     LD      (KEYFLAG),a     ;   (KEYFLAG) = true
+                                                            ; }    
+018B   78                           LD      a,b             ;
 018C   C9                           RET                     ;return a=key
 018D   00                           NOP         
 
 018E   0E 0A        BEEP:           LD      c,0x0a          ;c = 0A (10)
 0190   21 50 00                     LD      hl,0x0050       ;hl = 50 (80)
-                                                            ;fall thru to MAKETONE
+                                                            ;fall thru to PLAYTONE
 
 0193                                                        ;subroutine: play tone, freq c, duration h1
 0193                                                        ;destroys: hl, de, a, b
-0193   29           MAKETONE:       ADD     hl,hl           ;hl = hl + h1, why?
+0193   29           PLAYTONE:       ADD     hl,hl           ;hl = hl + h1
 0194   11 01 00                     LD      de,0x0001       ;de = 1
 0197   AF                           XOR     a               ;a = 0
 0198   D3 02                        OUT     (PORTSEGS),a    ;clear segments
@@ -348,57 +350,58 @@
 01AE   FF                           DB      0xFF   
 01AF   FF                           DB      0xFF   
 
-                    PLAYMUSIC:      ORG     0x01B0
-01B0   ED 5B 00 08                  LD      de,(STARTRAM)   
-01B4   1A                           LD      a,(de)   
-01B5   E6 1F                        AND     0x1f   
-01B7   FE 1F                        CP      0x1f   
-01B9   C8                           RET     z   
+                    PLAYTUNE:       ORG     0x01B0
+01B0   ED 5B 00 08                  LD      de,(STARTRAM)   ;de = address of tune
+01B4   1A           PTLOOP1:        LD      a,(de)          ;a = (de); a = note
+01B5   E6 1F                        AND     0x1f            ;mask lower 5 bits
+01B7   FE 1F                        CP      0x1f            ;if (a == ENDOFTUNE)
+01B9   C8                           RET     z               ;    return
 01BA   00                           NOP         
 01BB   00                           NOP         
-01BC   FE 1E                        CP      0x1e   
-01BE   CA B0 01                     JP      z,PLAYMUSIC   
-01C1   FE 00                        CP      0x00   
-01C3   CA E9 01                     JP      z,0x01e9   
-01C6   47                           LD      b,a   
-01C7   13                           INC     de   
-01C8   D5                           PUSH    de   
-01C9   21 F8 01                     LD      hl,0x01f8   
-01CC   CD E3 01                     CALL    CHAR2SEG   
-01CF   F5                           PUSH    af   
-01D0   78                           LD      a,b   
-01D1   21 10 02                     LD      hl,0x0210   
-01D4   CD E3 01                     CALL    CHAR2SEG   
+01BC   FE 1E                        CP      0x1e            ;if (a == REPEATTUNE)
+01BE   CA B0 01                     JP      z,PLAYTUNE      ;  goto PLAYTUNE
+01C1   FE 00                        CP      0x00            ;if (a == SILENCE)
+01C3   CA E9 01                     JP      z,PTSILENCE     ;  goto PTSILENCE
+01C6   47                           LD      b,a             ;b = note 
+01C7   13                           INC     de              ;de++  
+01C8   D5                           PUSH    de              ;save de
+01C9   21 F8 01                     LD      hl,FREQWL       ;hl = frequency wave length
+01CC   CD E3 01                     CALL    TBLOOKUP        ;a = lookup note 
+01CF   F5                           PUSH    af              ;save a
+01D0   78                           LD      a,b             ;a = note
+01D1   21 10 02                     LD      hl,FREQNC       ;h1 = frequency num cycles
+01D4   CD E3 01                     CALL    TBLOOKUP        ;a = lookup note
 01D7   6F                           LD      l,a   
-01D8   26 00                        LD      h,0x00   
-01DA   F1                           POP     af   
-01DB   4F                           LD      c,a   
-01DC   CD 93 01                     CALL    MAKETONE   
-01DF   D1                           POP     de   
-01E0   C3 B4 01                     JP      0x01b4   
+01D8   26 00                        LD      h,0x00          ;hl = num cycles
+01DA   F1                           POP     af              ;restore a 
+01DB   4F                           LD      c,a             ;c = wave length
+01DC   CD 93 01                     CALL    PLAYTONE        ;c and hl 
+01DF   D1                           POP     de              ;save de
+01E0   C3 B4 01                     JP      PTLOOP1         ;play next note
 
-                                                            ;subroutine: convert a to 7 segments
-                                                            ;a = char
-                                                            ;hl = CHAR7SEGTBL
+                                                            ;subroutine: lookup offset in table
+                                                            ;a = offset
+                                                            ;hl = table
                                                             ;result in a
                                                             ;destroys e, d
 
-01E3   5F           CHAR2SEG:       LD      e,a             ;e = char
+01E3   5F           TBLOOKUP:       LD      e,a             ;e = offset
 01E4   16 00                        LD      d,0x00          ;d = 0
 01E6   19                           ADD     hl,de           ;hl = hl + de
-01E7   7E                           LD      a,(hl)          ;a = CHAR7SEGTBL + charoffset
+01E7   7E                           LD      a,(hl)          ;a = table + offset
 01E8   C9                           RET                     ;return
 
-01E9   D5                           PUSH    de   
-01EA   11 00 10                     LD      de,0x1000   
-01ED   1B                           DEC     de   
-01EE   7A                           LD      a,d   
-01EF   B3                           OR      e   
-01F0   C2 ED 01                     JP      nz,0x01ed   
-01F3   D1                           POP     de   
-01F4   13                           INC     de   
-01F5   C3 B4 01                     JP      0x01b4   
-01F8   8C                           ADC     a,h   
+01E9   D5           PTSILENCE:      PUSH    de              ;save de
+01EA   11 00 10                     LD      de,0x1000       ;delay count = 1000
+01ED   1B           PTLOOP2:        DEC     de              ;de-- 
+01EE   7A                           LD      a,d             
+01EF   B3                           OR      e               ;if (de != 0)
+01F0   C2 ED 01                     JP      nz,PTLOOP2      ;  goto PTLOOP2
+01F3   D1                           POP     de              ;restore de
+01F4   13                           INC     de              ;de++
+01F5   C3 B4 01                     JP      PTLOOP1         ;play next note
+
+01F8   8C           FREQWL:         ADC     a,h   
 01F9   83                           ADD     a,e   
 01FA   7C                           LD      a,h   
 01FB   75                           LD      (hl),l   
@@ -419,7 +422,8 @@
 020B   2C                           INC     l   
 020C   2A 27 25                     LD      hl,(0x2527)   
 020F   23                           INC     hl   
-0210   19                           ADD     hl,de   
+
+0210   19           FREQNC:         ADD     hl,de   
 0211   1A                           LD      a,(de)   
 0212   1C                           INC     e   
 0213   1D                           DEC     e   
@@ -440,6 +444,7 @@
 0226   57                           LD      d,a   
 0227   5C                           LD      e,h   
 0228   10 FF                        DJNZ    0x0229   
+
 022A   FF                           DB      0xFF   
 022B   FF                           DB      0xFF   
 022C   FF                           DB      0xFF   
@@ -500,27 +505,27 @@
 026E   00                           DB      0x00   
 026F   1E                           DB      0x1E   
 
-                    BANNER:         ORG     0x0270  
+                    SHOWTEXT:         ORG     0x0270  
 0270   FD 2A 00 08                  LD      iy,(STARTRAM)   ;iy = text_ptr  
 0274   DD 21 F1 0F                  LD      ix,DISPLAY      ;ix = display_ptr
 
                                                             ;clear display
 0278   06 06                        LD      b,0x06          ;b = num of display digits
 027A   21 F1 0F                     LD      hl,DISPLAY      ;hl = display_ptr
-027D   36 00        BANN1:          LD      (hl),0x00       ;(hl) = SPACE
+027D   36 00        STXT1:          LD      (hl),0x00       ;(hl) = SPACE
 027F   23                           INC     hl              ;hl++
-0280   10 FB                        DJNZ    BANN1           ;loop until b == 0
+0280   10 FB                        DJNZ    STXT1           ;loop until b == 0
 
-0282   06 06        BANNLOOP:       LD      b,0x06          ;b = num of display digits
+0282   06 06        STXTLOOP:       LD      b,0x06          ;b = num of display digits
 0284   11 F7 0F                     LD      de,DISPLAY6     ;de = last display digit 
 0287   21 F6 0F                     LD      hl,0x0ff6       ;hl = second last display digit
 
                                                             ;shift display one digit to the left    
-028A   7E           BANN2:          LD      a,(hl)          ;a = (hl)
+028A   7E           STXT2:          LD      a,(hl)          ;a = (hl)
 028B   12                           LD      (de),a          ;(de) = a
 028C   2B                           DEC     hl              ;hl--
 028D   1B                           DEC     de              ;de--
-028E   10 FA                        DJNZ    BANN2
+028E   10 FA                        DJNZ    STXT2
 
 0290   FD 7E 00                     LD      a,(iy+0)        ;a = (iy) ;text char
 0293   FD 23                        INC     iy              ;iy++
@@ -528,20 +533,20 @@
 0297   FE 1F                        CP      0x1f            ;if a == ENDOFTEXT
 0299   C8                           RET     z               ;  return
 029A   FE 1E                        CP      0x1e            ;if a == REPEATTEXT
-029C   28 D2                        JR      z,BANNER        ;  goto BANNER 
+029C   28 D2                        JR      z,SHOWTEXT        ;  goto SHOWTEXT 
 
 029E   21 B3 02                     LD      hl,CHAR7SEGTBL  ;hl = char_7segment_table
-02A1   CD E3 01                     CALL    CHAR2SEG        ;convert char to 7segments    
+02A1   CD E3 01                     CALL    TBLOOKUP        ;convert char to 7segments    
 02A4   32 F1 0F                     LD      (DISPLAY),a     ;store in first digit 
 
                                                             ;scan display 128 times 
 02A7   3E 80                        LD      a,0x80          ;a = 80
-02A9   F5           BANN3:          PUSH    af              ;save a    
+02A9   F5           STXT3:          PUSH    af              ;save a    
 02AA   CD 40 01                     CALL    SCANDISP        ;scan display
 02AD   F1                           POP     af              ;restore a
 02AE   3D                           DEC     a               ;if (a-- != 0)
-02AF   20 F8                        JR      nz,BANN3        ;  goto BANN3
-02B1   18 CF                        JR      BANNLOOP        ;repeat shifting and scanning    
+02AF   20 F8                        JR      nz,STXT3        ;  goto STXT3
+02B1   18 CF                        JR      STXTLOOP        ;repeat shifting and scanning    
 
 02B3   00           CHAR7SEGTBL:    DB      0x00            ;00 SPACE
 02B4   6F                           DB      0x6F            ;01 A
@@ -824,7 +829,7 @@
 0453   C3 59 04                     JP      L459   
 0456   11 CC 03                     LD      de,NIMWIN   
 0459   ED 53 00 08  L459:           LD      (STARTRAM),de   
-045D   CD 70 02                     CALL    BANNER   
+045D   CD 70 02                     CALL    SHOWTEXT   
 0460   CD 31 01                     CALL    GETKEY   
 0463   C3 E0 03                     JP      0x03e0   
 0466   21 F1 0F     NIMDISPLAY:     LD      hl,DISPLAY   
@@ -920,7 +925,7 @@
 050F   18 03                        JR      0x0514   
 0511   11 7B 04                     LD      de,LUNAS1   
 0514   ED 53 00 08                  LD      (STARTRAM),de   
-0518   CD B0 01                     CALL    PLAYMUSIC   
+0518   CD B0 01                     CALL    PLAYTUNE   
 051B   CD 31 01                     CALL    GETKEY   
 051E   C3 90 04                     JP      0x0490   
 
@@ -1018,10 +1023,10 @@
 0591   32 FA 0F                     LD      (KEYFLAG),a   
 0594   0E 0A                        LD      c,0x0a   
 0596   21 50 00                     LD      hl,0x0050   
-0599   CD 93 01                     CALL    MAKETONE   
+0599   CD 93 01                     CALL    PLAYTONE   
 059C   0E 20                        LD      c,0x20   
 059E   21 30 00                     LD      hl,0x0030   
-05A1   CD 93 01                     CALL    MAKETONE   
+05A1   CD 93 01                     CALL    PLAYTONE   
 05A4   C3 E3 00                     JP      DATADISP   
 05A7   FF                           DB      0xFF   
 05A8   FF                           DB      0xFF   
@@ -1659,7 +1664,7 @@ PORTSPKR:           0001 DEFINED AT LINE 10
 PORTSEGS:           0002 DEFINED AT LINE 11
                     > USED AT LINE 227
                     > USED AT LINE 300
-STARTMUSIC:         0041 DEFINED AT LINE 62
+STARTTUNE:         0041 DEFINED AT LINE 62
                     > USED AT LINE 46
                     > USED AT LINE 50
 NMINT:              0066 DEFINED AT LINE 97
@@ -1734,7 +1739,7 @@ GETDATAKEY:         017B DEFINED AT LINE 280
 BEEP:               018E DEFINED AT LINE 293
                     > USED AT LINE 104
                     > USED AT LINE 638
-MAKETONE:           0193 DEFINED AT LINE 297
+PLAYTONE:           0193 DEFINED AT LINE 297
                     > USED AT LINE 342
                     > USED AT LINE 947
                     > USED AT LINE 950
@@ -1742,17 +1747,17 @@ MTLOOP:             019B DEFINED AT LINE 302
                     > USED AT LINE 307
 MTDELAY:            019E DEFINED AT LINE 304
                     > USED AT LINE 304
-PLAYMUSIC:          01B0 DEFINED AT LINE 318
+PLAYTUNE:           01B0 DEFINED AT LINE 318
                     > USED AT LINE 63
                     > USED AT LINE 326
                     > USED AT LINE 853
-CHAR2SEG:               01E3 DEFINED AT LINE 345
+TBLOOKUP:               01E3 DEFINED AT LINE 345
                     > USED AT LINE 333
                     > USED AT LINE 337
                     > USED AT LINE 481
 TUNE1:              0230 DEFINED AT LINE 407
                     > USED AT LINE 45
-BANNER:             0270 DEFINED AT LINE 458
+SHOWTEXT:           0270 DEFINED AT LINE 458
                     > USED AT LINE 479
                     > USED AT LINE 764
 CHAR7SEGTBL:         02B3 DEFINED AT LINE 490
