@@ -332,7 +332,7 @@ MULTIPASS DISPLAY  01d8 c5                   push bc
 unused		   01ff ff
 
 Main monitor program entry point.
-MONSTART           0200 ed 73 e8 08          ld (0x08e8),sp
+MONSTART   0200 ed 73 e8 08          ld (0x08e8),sp
 		   0204 31 00 09             ld sp,0x0900
 		   0207 f5                   push af
 		   0208 c5                   push bc
@@ -355,7 +355,7 @@ MONSTART           0200 ed 73 e8 08          ld (0x08e8),sp
 		   0221 32 e0 08             ld (0x08e0),a
 		   0224 c3 40 02             jp 0x0240
 
-unused		   0227 ff                   rst 0x38
+unused		0227 ff                   rst 0x38
                      |
 		   023f ff                   rst 0x38
 
