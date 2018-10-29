@@ -3,7 +3,6 @@
 ; Released under the GNU GENERAL PUBLIC LICENSE 3.0
 ;
 ; SEQUENCER at 0x05B0 written by Ken Stone
-                                        
 STARTRAM:       EQU     0x800
 DISPLAY:        EQU     0x0ff1          ;display start (data part)
 DISPLAY2:       EQU     0x0ff3          ;display address part offset
