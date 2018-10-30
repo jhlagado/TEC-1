@@ -118,36 +118,48 @@
 007E   FF                           db 0xFF
 007F   FF                           db 0xFF
 0080                SEVSEGDATA:     org 0x0080
-0080   EB                           ex de,hl
-0081   28 CD                        jr z,0x0050
-0083   AD                           xor l
-0084   2E A7                        ld l,0xa7
-0086   E7                           rst 0x20
-0087   29                           add hl,hl
-0088   EF                           rst 0x28
-0089   2F                           cpl
-008A   6F                           ld l,a
-008B   E6 C3                        and 0xc3
-008D   EC C7 47                     call pe,0x47c7
-0090   E3                           ex (sp),hl
-0091   66                           ld h,(hl)
-0092   28 E8                        jr z,0x007c
-0094   4E                           ld c,(hl)
-0095   C2 2D 6B                     jp nz,0x6b2d
-0098   EB                           ex de,hl
-0099   4F                           ld c,a
-009A   2F                           cpl
-009B   4B                           ld c,e
-009C   A7                           and a
-009D   46                           ld b,(hl)
-009E   EA E0 AC                     jp pe,0xace0
-00A1   A4                           and h
-00A2   AE                           xor (hl)
-00A3   C9                           ret
-00A4   10 08                        djnz 0x00ae
-00A6   18 04                        jr 0x00ac
-00A8   2C                           inc l
-00A9   00                           nop
+0080   EB                           DB 0xEB
+0081   28 CD                        DB 0x28
+                                    DB 0xCD
+0083   AD                           DB 0xAD
+0084   2E A7                        DB 0x2E
+                                    DB 0xA7
+0086   E7                           DB 0xE7
+0087   29                           DB 0x29
+0088   EF                           DB 0xEF
+0089   2F                           DB 0x2F
+008A   6F                           DB 0x6F
+008B   E6 C3                        DB 0xE6
+                                    DB 0xC3
+008D   EC C7 47                     DB 0xEC
+                                    DB 0xC7
+                                    DB 0x47
+0090   E3                           DB 0xE3
+0091   66                           DB 0x66
+0092   28 E8                        DB 0x28
+                                    DB 0xE8
+0094   4E                           DB 0x4E
+0095   C2 2D 6B                     DB 0xC2
+                                    DB 0x2D
+                                    DB 0x6B
+0098   EB                           DB 0xEB
+0099   4F                           DB 0x4F
+009A   2F                           DB 0x2F
+009B   4B                           DB 0x4B
+009C   A7                           DB 0xA7
+009D   46                           DB 0x46
+009E   EA E0 AC                     DB 0xEA
+                                    DB 0xE0
+                                    DB 0xAC
+00A1   A4                           DB 0xA4
+00A2   AE                           DB 0xAE
+00A3   C9                           DB 0xC9
+00A4   10 08                        DB 0x10
+                                    DB 0x08
+00A6   18 04                        DB 0x18
+                                    DB 0x04
+00A8   2C                           DB 0x2C
+00A9   00                           DB 0x00
 00AA   FF                           db 0xFF
 00AB   FF                           db 0xFF
 00AC   FF                           db 0xFF
