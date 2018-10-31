@@ -15,7 +15,7 @@
 0005   FF                           db 0xFF
 0006   FF                           db 0xFF
 0007   FF                           db 0xFF
-0008   2A C0 08                     ld hl,(0x08c0)
+0008   2A C0 08                     ld hl,(STACKSTART)
 000B   E9                           jp (hl)
 000C   FF                           db 0xFF
 000D   FF                           db 0xFF
@@ -410,9 +410,9 @@
 01FC   C3 78 03                     jp 0x0378
 01FF   FF                           db 0xFF
 0200                MONSTART:       ORG 0x0200              ;Main monitor program entry point.
-0200   ED 73 E8 08                  ld (0x08e8),sp
-0204   31 00 09                     ld sp,0x0900
-0207   F5                           push af
+0200   ED 73 E8 08                  ld (STORESP),sp          ;save stack point
+0204   31 00 09                     ld sp,RAMSTART            ;sp = RAMSTART
+0207   F5                           push af                 ;save registers
 0208   C5                           push bc
 0209   D5                           push de
 020A   E5                           push hl
@@ -426,11 +426,11 @@
 0214   E5                           push hl
 0215   ED 57                        ld a,i
 0217   F5                           push af
-0218   AF                           xor a
-0219   32 CC 08                     ld (0x08cc),a
-021C   32 CD 08                     ld (0x08cd),a
+0218   AF                           xor a                   ;a = 0
+0219   32 CC 08                     ld (0x08cc),a           ;STORE1L = 0
+021C   32 CD 08                     ld (0x08cd),a           ;STORE1H = 0
 021F   3E FF                        ld a,0xff
-0221   32 E0 08                     ld (0x08e0),a
+0221   32 E0 08                     ld (0x08e0),a           ;STORE2 = FF
 0224   C3 40 02                     jp 0x0240
 0227   FF                           db 0xFF
 0228   FF                           db 0xFF
@@ -457,7 +457,7 @@
 023D   FF                           db 0xFF
 023E   FF                           db 0xFF
 023F   FF                           db 0xFF
-0240   31 C0 08                     ld sp,0x08c0
+0240   31 C0 08     MONSTART2       ld sp,STACKSTART            ;sp = STACKSTART
 0243   AF                           xor a
 0244   D3 01                        out (0x01),a
 0246   D3 02                        out (0x02),a
@@ -479,7 +479,7 @@
 026E   FF                           db 0xFF
 026F   FF                           db 0xFF
 0270                GETADDRDATA:    org  0x0270             ;GetAddressedData
-0270   F5                           push af
+0270   F5                           push af                 ;save af, hl, bc
 0271   E5                           push hl
 0272   C5                           push bc
 0273   CD 89 02                     call 0x0289
@@ -605,7 +605,7 @@
 030C   CD 89 02                     call 0x0289
 030F   C5                           push bc
 0310   E1                           pop hl
-0311   31 C0 08                     ld sp,0x08c0
+0311   31 C0 08                     ld sp,STACKSTART
 0314   E9                           jp (hl)
 0315   FF                           db 0xFF
 0316   FF                           db 0xFF
