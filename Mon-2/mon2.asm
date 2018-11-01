@@ -1,13 +1,13 @@
-0000                                                        ;Keyboard functions:
-0000                                                        ;Shift-Insert range 0900 - 4000 (03FF??)
-0000                                                        ;Shift-Delete range 0900 - 03FF (03FF is set to 00 on use of delete
-0000                                                        ;function).
-0000                                                        ;Shift -Address jumps to location stored at 08D2 and 08D3
-0000                                                        ;Info:
-0000                                                        ;Stack Start 08C0
-0000                                                        ;Stack Max Length C0
-0000                                                        ;User Code Start 0900
-0000                                                        ;KeyData location 08E0 (placed there by NMI routine)
+0000                ;Keyboard functions:
+0000                ;Shift-Insert range 0900 - 4000 (03FF??)
+0000                ;Shift-Delete range 0900 - 03FF (03FF is set to 00 on use of delete
+0000                ;function).
+0000                ;Shift -Address jumps to location stored at 08D2 and 08D3
+0000                ;Info:
+0000                ;Stack Start 08C0
+0000                ;Stack Max Length C0
+0000                ;User Code Start 0900
+0000                ;KeyData location 08E0 (placed there by NMI routine)
 0000                STARTROM:       ORG 0x0000
 0000   C3 00 02                     jp 0x0200		        ;Jump to MONSTART
 0003   FF                           db 0xFF
@@ -234,75 +234,75 @@
 00FF   FF                           db 0xFF
 0100                TABLES:         ORG 0x0100              ;tables
 0100   FD           FRQTBL:         defb 0xfd               ;(division table for frequencies)
-0101   10 10                        djnz 0x0113
-0103   FD                           defb 0xfd
-0104   11 EF 12                     ld de,0x12ef
-0107   E1                           pop hl
-0108   13                           inc de
-0109   54                           ld d,h
-010A   14                           inc d
-010B   C9                           ret
-010C   10 BE                        djnz 0x00cc
-010E   10 B2                        djnz 0x00c2
-0110   10 A9                        djnz 0x00bb
-0112   19                           add hl,de
-0113   9F                           sbc a,a
-0114   1A                           ld a,(de)
-0115   96                           sub (hl)
-0116   1C                           inc e
-0117   80                           add a,b
-0118   1E 86                        ld e,0x86
-011A   20 7F                        jr nz,0x019b
-011C   22 77 24                     ld (0x2477),hl
-011F   71                           ld (hl),c
-0120   26 6A                        ld h,0x6a
-0122   28 64                        jr z,0x0188
-0124   2A 5F 2D                     ld hl,(0x2d5f)
-0127   59                           ld e,c
-0128   2F                           cpl
-0129   54                           ld d,h
-012A   32 50 35                     ld (0x3550),a
-012D   4B                           ld c,e
-012E   38 47                        jr c,0x0177
-0130   3C                           inc a
-0131   43                           ld b,e
-0132   3F                           ccf
-0133   3F                           ccf
-0134   43                           ld b,e
-0135   3C                           inc a
-0136   47                           ld b,a
-0137   38 4B                        jr c,0x0184
-0139   35                           dec (hl)
-013A   50                           ld d,b
-013B   32 54 2F                     ld (0x2f54),a
-013E   59                           ld e,c
-013F   2D                           dec l
-0140   5F                           ld e,a
-0141   2A 64 28                     ld hl,(0x2864)
-0144   6A                           ld l,d
-0145   26 71                        ld h,0x71
-0147   24                           inc h
-0148   77                           ld (hl),a
-0149   22 7F 20                     ld (0x207f),hl
-014C   86                           add a,(hl)
-014D   1E 8E                        ld e,0x8e
-014F   1C                           inc e
-0150   96                           sub (hl)
-0151   1A                           ld a,(de)
-0152   94                           sub h
-0153   19                           add hl,de
-0154   A9                           xor c
-0155   18 B3                        jr 0x010a
-0157   16 BE                        ld d,0xbe
-0159   15                           dec d
-015A   C9                           ret
-015B   14                           inc d
-015C   D5                           push de
-015D   13                           inc de
-015E   E1                           pop hl
-015F   12                           ld (de),a
-0160   EF                           rst 0x28
-0161   11 FD 10                     ld de,0x10fd
+0101   10 10                        db 0x10, 0x10
+0103   FD                           db 0xFD
+0104   11 EF 12                     db 0x11, 0xEF ,0x12
+0107   E1                           db 0xE1
+0108   13                           db 0x13
+0109   54                           db 0x54
+010A   14                           db 0x14
+010B   C9                           db 0xC9
+010C   10 BE                        db 0x10, 0xBE
+010E   10 B2                        db 0x10, 0xB2
+0110   10 A9                        db 0x10, 0xA9
+0112   19                           db 0x19
+0113   9F                           db 0x9F
+0114   1A                           db 0x1A
+0115   96                           db 0x96
+0116   1C                           db 0x1C
+0117   80                           db 0x80
+0118   1E 86                        db 0x1E, 0x86
+011A   20 7F                        db 0x20, 0x7F
+011C   22 77 24                     db 0x22, 0x77, 0x24
+011F   71                           db 0x71
+0120   26 6A                        db 0x26, 0x6A
+0122   28 64                        db 0x28, 0x64
+0124   2A 5F 2D                     db 0x2A, 0x5F, 0x2D
+0127   59                           db 0x59
+0128   2F                           db 0x2F
+0129   54                           db 0x54
+012A   32 50 35                     db 0x32, 0x50, 0x35
+012D   4B                           db 0x4B
+012E   38 47                        db 0x38, 0x47
+0130   3C                           db 0x3C
+0131   43                           db 0x43
+0132   3F                           db 0x3F
+0133   3F                           db 0x3F
+0134   43                           db 0x43
+0135   3C                           db 0x3C
+0136   47                           db 0x47
+0137   38 4B                        db 0x38, 0x4B
+0139   35                           db 0x35
+013A   50                           db 0x50
+013B   32 54 2F                     db 0x32, 0x54, 0x2F
+013E   59                           db 0x59
+013F   2D                           db 0x2D
+0140   5F                           db 0x5F
+0141   2A 64 28                     db 0x2A, 0x64, 0x28
+0144   6A                           db 0x6A
+0145   26 71                        db 0x26, 0x71
+0147   24                           db 0x24
+0148   77                           db 0x77
+0149   22 7F 20                     db 0x22, 0x7F, 0x20
+014C   86                           db 0x86
+014D   1E 8E                        db 0x1E, 0x8E
+014F   1C                           db 0x1C
+0150   96                           db 0x96
+0151   1A                           db 0x1A
+0152   94                           db 0x94
+0153   19                           db 0x19
+0154   A9                           db 0xA9
+0155   18 B3                        db 0x18, 0xB3
+0157   16 BE                        db 0x16, 0xBE
+0159   15                           db 0x15
+015A   C9                           db 0xC9
+015B   14                           db 0x14
+015C   D5                           db 0xD5
+015D   13                           db 0x13
+015E   E1                           db 0xE1
+015F   12                           db 0x12
+0160   EF                           db 0xEF
+0161   11 FD 10                     db 0x11, 0xFD, 0x10
 0164   FF                           db 0xFF
 0165   FF                           db 0xFF
 0166   FF                           db 0xFF
@@ -316,36 +316,37 @@
 016E   FF                           db 0xFF
 016F   FF                           db 0xFF
 0170                PLAYTONE:       org 0x0170          ;TONE routine. 0170
-0170   C5                           push bc
+                                                        ;a is the tone number
+0170   C5                           push bc             ;save bc,de,hl,af
 0171   D5                           push de
 0172   E5                           push hl
 0173   F5                           push af
-0174   A7                           and a               ;Set Z Flag
-0175   20 03                        jr nz,0x017a        ;If not zero, Jump Rel to ptnotzero
-0177   5F                           ld e,a              ;Clear E
-0178   18 02                        jr 0x017c           ;Jump Rel to ptzero
-017A   1E 80        ptAisnotzero:   ld e,0x80           ;Load E with 80h
-017C   21 00 01     ptAiszero:      ld hl,0x0100        ;(^division table for frequencies)
-017F   87                           add a,a
-0180   85                           add a,l
-0181   6F                           ld l,a
-0182   4E                           ld c,(hl)
-0183   23                           inc hl
-0184   46           lengthloop:     ld b,(hl)
-0185   7B                           ld a,e
-0186   D3 01                        out (0x01),a
-0188   10 FE        toneloop:       djnz 0x0188
-018A   46                           ld b,(hl)
-018B   AF                           xor a
-018C   D3 01                        out (0x01),a
-018E   10 FE                        djnz 0x018e
-0190   0D                           dec c
-0191   20 F1                        jr nz,0x0184
-0193   F1                           pop af
+0174   A7                           and a                   ;Set Z Flag
+0175   20 03                        jr nz,ptAisnotzero      ;If not zero, Jump Rel to ptAisnotzero
+0177   5F                           ld e,a                  ;Clear E
+0178   18 02                        jr ptAiszero            ;Jump Rel to ptzero
+017A   1E 80        ptAisnotzero:   ld e,0x80               ;Load E with 80h; high bit is speaker
+017C   21 00 01     ptAiszero:      ld hl,FRQTBL            ;(^division table for frequencies)
+017F   87                           add a,a                 ;offset a words into table
+0180   85                           add a,l                 ;l += a * 2
+0181   6F                           ld l,a                  ;
+0182   4E                           ld c,(hl)               ;bc = (hl) ;freq division
+0183   23                           inc hl                  ;
+0184   46           lengthloop:     ld b,(hl)               ;
+0185   7B                           ld a,e                  ;a = e
+0186   D3 01                        out (0x01),a            ;speaker bit = 1
+0188   10 FE        toneloop:       djnz toneloop           ;repeat while (--b > 0)
+018A   46                           ld b,(hl)               ;restore b
+018B   AF                           xor a                   ;a = 0
+018C   D3 01                        out (0x01),a            ;speaker bit = 0
+018E   10 FE        toneloop2:      djnz 0x018e             ;repeat while (--b > 0)
+0190   0D                           dec c                   ;c--
+0191   20 F1                        jr nz,lengthloop        ;if (c != 0) goto lengthloop
+0193   F1                           pop af                  ;restore bc,de,hl,af
 0194   E1                           pop hl
 0195   D1                           pop de
 0196   C1                           pop bc
-0197   C9                           ret
+0197   C9                           ret                     ;return
 0198   FF                           db 0xFF
 0199   FF                           db 0xFF
 019A   FF                           db 0xFF
@@ -354,7 +355,7 @@
 019D   FF                           db 0xFF
 019E   FF                           db 0xFF
 019F   FF                           db 0xFF
-01A0                PLAYTUNE:       org 0x01a0  ;MUSIC routine.
+01A0                PLAYTUNE:       org 0x01a0              ;MUSIC routine.
 01A0   F5                           push af
 01A1   E5                           push hl
 01A2   2A D6 08                     ld hl,(0x08d6)
@@ -496,30 +497,30 @@
 0286   E1                           pop hl
 0287   F1                           pop af
 0288   C9                           ret
-0289                                                        ;GetEditorAddress
-0289                                                        ;The address used by editor and shown on the 7 segment display is
-0289                                                        ;stored in one location only, to prevent a situation where dislayed
-0289                                                        ;address and real address could differ. In a trade off in
-0289                                                        ;processing
-0289                                                        ;time, it was more efficient to store the address in the optimal
-0289                                                        ;from for the display routine. As such it needs converting to and
-0289                                                        ;from this format when used by the monitor program.
-0289                                                        ;The chosen location is the display buffer, where the address is
-0289                                                        ;broken into nibbles and spread across four bytes, 08D8, 08D9,
-0289                                                        ;08DA,
-0289                                                        ;08DB, MSN to LSN. GetEditorAddress is used to retrieve this
-0289                                                        ;address.
-0289                                                        ;The data held here is only valid while the monitor program is
-0289                                                        ;running. As soon as something else is written to the display it is
-0289                                                        ;lost. Resetting the computer restores it to the default 0900h.
-0289                                                        ;GetEditorAddress, when called, loads BC with the address currently
-0289                                                        ;held In the display buffer. It also loads A with the data held at
-0289                                                        ;the location addressed by BC.
-0289                                                        ;E.G. If the LED display shows 0900 CD, calling 0289 will load BC
-0289                                                        ;with 0900 (B is the MSB) and loads A with CD. This routine is not
-0289                                                        ;transparent. HL is destroyed. BC and A hold the results. If this
-0289                                                        ;routine is called during a user program that is not an extension ;;to
-0289                                                        ;the monitor, the result will have no meaning.
+0289                ;GetEditorAddress
+0289                ;The address used by editor and shown on the 7 segment display is
+0289                ;stored in one location only, to prevent a situation where dislayed
+0289                ;address and real address could differ. In a trade off in
+0289                ;processing
+0289                ;time, it was more efficient to store the address in the optimal
+0289                ;from for the display routine. As such it needs converting to and
+0289                ;from this format when used by the monitor program.
+0289                ;The chosen location is the display buffer, where the address is
+0289                ;broken into nibbles and spread across four bytes, 08D8, 08D9,
+0289                ;08DA,
+0289                ;08DB, MSN to LSN. GetEditorAddress is used to retrieve this
+0289                ;address.
+0289                ;The data held here is only valid while the monitor program is
+0289                ;running. As soon as something else is written to the display it is
+0289                ;lost. Resetting the computer restores it to the default 0900h.
+0289                ;GetEditorAddress, when called, loads BC with the address currently
+0289                ;held In the display buffer. It also loads A with the data held at
+0289                ;the location addressed by BC.
+0289                ;E.G. If the LED display shows 0900 CD, calling 0289 will load BC
+0289                ;with 0900 (B is the MSB) and loads A with CD. This routine is not
+0289                ;transparent. HL is destroyed. BC and A hold the results. If this
+0289                ;routine is called during a user program that is not an extension ;;to
+0289                ;the monitor, the result will have no meaning.
 0289                GETEDITADDR:    ORG 0x0289              ;GetEditorAddress
 0289   21 D8 08                     ld hl,0x08d8
 028C   7E                           ld a,(hl)
@@ -644,10 +645,10 @@
 034D   FF                           db 0xFF
 034E   FF                           db 0xFF
 034F   FF                           db 0xFF
-0350                                                        ;Hex2SevenSeg converts the Hex value (0 to29) into the ;
-0350                                                        ;corresponding seven-segment data. It is part of the display ;
-0350                                                        ;destroyed, DE is incremented, A is converted from the value to its
-0350                                                        ;7 segment form.
+0350                ;Hex2SevenSeg converts the Hex value (0 to29) into the ;
+0350                ;corresponding seven-segment data. It is part of the display ;
+0350                ;destroyed, DE is incremented, A is converted from the value to its
+0350                ;7 segment form.
 0350                HEX2SEG:        org 0x0350              ;Hex2SevenSeg
 0350   21 80 00                     ld hl,0x0080
 0353   1A                           ld a,(de)
@@ -834,11 +835,11 @@
 048D   FF                           db 0xFF
 048E   FF                           db 0xFF
 048F   FF                           db 0xFF
-0490                                                        ;SetEditorAddress 0490 is the opposite of the GetEditorAddress
-0490                                                        ;0289 routine.
-0490                                                        ;It loads the display buffer (08D8, 08D9, 08DA, 08DB) with the
-0490                                                        ;value held in BC.
-0490                                                        ;AThis routine is transparent.
+0490                ;SetEditorAddress 0490 is the opposite of the GetEditorAddress
+0490                ;0289 routine.
+0490                ;It loads the display buffer (08D8, 08D9, 08DA, 08DB) with the
+0490                ;value held in BC.
+0490                ;AThis routine is transparent.
 0490                SETEDITADDR:    org 0x0490              ;SetEditorAddress
 0490   F5                           push af
 0491   E5                           push hl
