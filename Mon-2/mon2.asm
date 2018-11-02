@@ -3,55 +3,61 @@
 0000                ;Shift-Delete range 0900 - 03FF (03FF is set to 00 on use of delete
 0000                ;function).
 0000                ;Shift -Address jumps to location stored at 08D2 and 08D3
-0000                ;Info:
-0000                ;Stack Start 08C0
-0000                ;Stack Max Length C0
-0000                ;User Code Start 0900
-0000                ;KeyData location 08E0 (placed there by NMI routine)
+0000                ;
+0000                ADDRESS:        EQU 0x08D8              ;current address in nibbles over 4 bytes
+0000                ADDRESS0:       EQU 0x08D8
+0000                ADDRESS1:       EQU 0x08D9
+0000                ADDRESS2:       EQU 0x08DA
+0000                ADDRESS3:       EQU 0x08DB
+0000                STARTSTACK:     EQU 0x08C0              ;Stack Max Length C0
+0000                STARTRAM:       EQU 0x0900              ;User Code Start 0900
+0000                KEYDATA:        EQU 0x08E0              ;Key data location updated by NMI routine
+0000                ;
+0000                ;
 0000                STARTROM:       ORG 0x0000
-0000   C3 00 02                     jp 0x0200		        ;Jump to MONSTART
+0000   C3 00 02     RESTART00:      jp 0x0200		        ;Jump to MONSTART
 0003   FF                           db 0xFF
 0004   FF                           db 0xFF
 0005   FF                           db 0xFF
 0006   FF                           db 0xFF
 0007   FF                           db 0xFF
-0008   2A C0 08                     ld hl,(STACKSTART)
+0008   2A C0 08     RESTART08:      ld hl,(0x08c0)          ;jump to vector stored at 0x08c0
 000B   E9                           jp (hl)
 000C   FF                           db 0xFF
 000D   FF                           db 0xFF
 000E   FF                           db 0xFF
 000F   FF                           db 0xFF
-0010   2A C2 08                     ld hl,(0x08c2)
+0010   2A C2 08     RESTART10:      ld hl,(0x08c2)          ;jump to vector stored at 0x08c2
 0013   E9                           jp (hl)
 0014   FF                           db 0xFF
 0015   FF                           db 0xFF
 0016   FF                           db 0xFF
 0017   FF                           db 0xFF
-0018   2A C4 08                     ld hl,(0x08c4)
+0018   2A C4 08     RESTART18:      ld hl,(0x08c4)          ;jump to vector stored at 0x08c4
 001B   E9                           jp (hl)
 001C   FF                           db 0xFF
 001D   FF                           db 0xFF
 001E   FF                           db 0xFF
 001F   FF                           db 0xFF
-0020   2A C6 08                     ld hl,(0x08c6)
+0020   2A C6 08     RESTART20:      ld hl,(0x08c6)          ;jump to vector stored at 0x08c6
 0023   E9                           jp (hl)
 0024   FF                           db 0xFF
 0025   FF                           db 0xFF
 0026   FF                           db 0xFF
 0027   FF                           db 0xFF
-0028   2A C8 08                     ld hl,(0x08c8)
+0028   2A C8 08     RESTART28:      ld hl,(0x08c8)          ;jump to vector stored at 0x08c8
 002B   E9                           jp (hl)
 002C   FF                           db 0xFF
 002D   FF                           db 0xFF
 002E   FF                           db 0xFF
 002F   FF                           db 0xFF
-0030   2A CA 08                     ld hl,(0x08ca)
+0030   2A CA 08     RESTART30:      ld hl,(0x08ca)          ;jump to vector stored at 0x08ca
 0033   E9                           jp (hl)
 0034   FF                           db 0xFF
 0035   FF                           db 0xFF
 0036   FF                           db 0xFF
 0037   FF                           db 0xFF
-0038   2A CC 08     RESTART38:      ld hl,(0x08cc)
+0038   2A CC 08     RESTART38:      ld hl,(0x08cc)          ;jump to vector stored at 0x08cc
 003B   E9                           jp (hl)
 003C   FF                           db 0xFF
 003D   FF                           db 0xFF
@@ -95,11 +101,12 @@
 0063   FF                           db 0xFF
 0064   FF                           db 0xFF
 0065   FF                           db 0xFF
-0066   F5                           push af
-0067   DB 00                        in a,(0x00)
-0069   32 E0 08                     ld (0x08e0),a
-006C   F1                           pop af
-006D   ED 45                        retn
+0066   F5           NMINT:          ORG 0x066               ;NMI keyboard event
+0066   F5                           push af                 ;save af ;good idea! fixes Mon1
+0067   DB 00                        in a,(0x00)             ;a = key
+0069   32 E0 08                     ld (KEYDATA),a          ;save in ram
+006C   F1                           pop af                  ;restore af
+006D   ED 45                        retn                    ;correct return. fixes Mon1
 006F   FF                           db 0xFF
 0070   FF                           db 0xFF
 0071   FF                           db 0xFF
@@ -431,7 +438,7 @@
 0219   32 CC 08                     ld (0x08cc),a           ;STORE1L = 0
 021C   32 CD 08                     ld (0x08cd),a           ;STORE1H = 0
 021F   3E FF                        ld a,0xff
-0221   32 E0 08                     ld (0x08e0),a           ;STORE2 = FF
+0221   32 E0 08                     ld (KEYDATA),a           ;STORE2 = FF
 0224   C3 40 02                     jp 0x0240
 0227   FF                           db 0xFF
 0228   FF                           db 0xFF
@@ -463,7 +470,7 @@
 0244   D3 01                        out (0x01),a
 0246   D3 02                        out (0x02),a
 0248   21 B0 00                     ld hl,0x00b0
-024B   11 D8 08                     ld de,0x08d8
+024B   11 D8 08                     ld de,ADDRESS
 024E   01 05 00                     ld bc,0x0005
 0251   ED B0                        ldir
 0253   CD 70 02                     call 0x0270
@@ -498,31 +505,27 @@
 0287   F1                           pop af
 0288   C9                           ret
 0289                ;GetEditorAddress
-0289                ;The address used by editor and shown on the 7 segment display is
-0289                ;stored in one location only, to prevent a situation where dislayed
-0289                ;address and real address could differ. In a trade off in
-0289                ;processing
-0289                ;time, it was more efficient to store the address in the optimal
-0289                ;from for the display routine. As such it needs converting to and
-0289                ;from this format when used by the monitor program.
-0289                ;The chosen location is the display buffer, where the address is
-0289                ;broken into nibbles and spread across four bytes, 08D8, 08D9,
-0289                ;08DA,
-0289                ;08DB, MSN to LSN. GetEditorAddress is used to retrieve this
-0289                ;address.
-0289                ;The data held here is only valid while the monitor program is
-0289                ;running. As soon as something else is written to the display it is
-0289                ;lost. Resetting the computer restores it to the default 0900h.
-0289                ;GetEditorAddress, when called, loads BC with the address currently
-0289                ;held In the display buffer. It also loads A with the data held at
-0289                ;the location addressed by BC.
-0289                ;E.G. If the LED display shows 0900 CD, calling 0289 will load BC
-0289                ;with 0900 (B is the MSB) and loads A with CD. This routine is not
-0289                ;transparent. HL is destroyed. BC and A hold the results. If this
-0289                ;routine is called during a user program that is not an extension ;;to
-0289                ;the monitor, the result will have no meaning.
-0289                GETEDITADDR:    ORG 0x0289              ;GetEditorAddress
-0289   21 D8 08                     ld hl,0x08d8
+0289                ;The address used by editor and shown on the 7 segment display is stored in one
+0289                ;location only, to prevent a situation where dislayed address and real address
+0289                ;could differ. In a trade off in processing time, it was more efficient to store
+0289                ;the address in the optimal form for the display routine. As such it needs
+0289                ;converting to and from this format when used by the monitor program.
+0289                ;The chosen location is the display buffer, where the address is broken into
+0289                ;nibbles and spread across four bytes, 08D8, 08D9, 08DA, 08DB, MSN to LSN.
+0289                ;GetEditorAddress is used to retrieve this address.
+0289                ;The data held here is only valid while the monitor program is running. As soon as
+0289                ;something else is written to the display it is lost. Resetting the computer
+0289                ;restores it to the default 0900h.
+0289                ;
+0289                ;GetEditorAddress, when called, loads BC with the address currently held In the
+0289                ;display buffer. It also loads A with the data held at the location addressed by BC.
+0289                ;
+0289                ; E.G. If the LED display shows 0900 CD, calling 0289 will load BC with 0900 (B is
+0289                ;the MSB) and loads A with CD. This routine is not transparent. HL is destroyed. BC
+0289                ;and A hold the results. If this routine is called during a user program that is not
+0289                ;an extension to the monitor, the result will have no meaning.
+0289                GETEDITADDR:    ORG 0x0289
+0289   21 D8 08                     ld hl,ADDRESS
 028C   7E                           ld a,(hl)
 028D   07                           rlca
 028E   07                           rlca
@@ -548,7 +551,7 @@
 02A1   E5                           push hl
 02A2   D5                           push de
 02A3   C5                           push bc
-02A4   11 D8 08                     ld de,0x08d8
+02A4   11 D8 08                     ld de,ADDRESS
 02A7   AF                           xor a
 02A8   D3 01                        out (0x01),a
 02AA   CD 50 03                     call 0x0350
@@ -664,7 +667,7 @@
 035F   FF                           db 0xFF
 0360   F5                           push af
 0361   E5                           push hl
-0362   21 E0 08                     ld hl,0x08e0
+0362   21 E0 08                     ld hl,KEYDATA
 0365   3E FF                        ld a,0xff
 0367   BE                           cp (hl)
 0368   28 0E                        jr z,0x0378
@@ -843,7 +846,7 @@
 0490                SETEDITADDR:    org 0x0490              ;SetEditorAddress
 0490   F5                           push af
 0491   E5                           push hl
-0492   21 D8 08                     ld hl,0x08d8
+0492   21 D8 08                     ld hl,ADDRESS
 0495   78                           ld a,b
 0496   E6 F0                        and 0xf0
 0498   07                           rlca
