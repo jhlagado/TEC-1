@@ -4,60 +4,68 @@
 0000                ;function).
 0000                ;Shift -Address jumps to location stored at 08D2 and 08D3
 0000                ;
+0000                STARTSTACK:     EQU 0x08C0              ;Stack Max Length C0
+0000                VECTOR0:        EQU 0x08C0              ;user vector 0
+0000                VECTOR1:        EQU 0x08C2              ;user vector 1
+0000                VECTOR2:        EQU 0x08C4              ;user vector 2
+0000                VECTOR3:        EQU 0x08C6              ;user vector 3
+0000                VECTOR4:        EQU 0x08C8              ;user vector 4
+0000                VECTOR5:        EQU 0x08CA              ;user vector 5
+0000                VECTOR6:        EQU 0x08CC              ;user vector 6
 0000                ADDRESS:        EQU 0x08D8              ;current address in nibbles over 4 bytes
 0000                ADDRESS0:       EQU 0x08D8
 0000                ADDRESS1:       EQU 0x08D9
 0000                ADDRESS2:       EQU 0x08DA
 0000                ADDRESS3:       EQU 0x08DB
-0000                STARTSTACK:     EQU 0x08C0              ;Stack Max Length C0
+0000                MODE:         EQU 0x08DF              ;????
 0000                STARTRAM:       EQU 0x0900              ;User Code Start 0900
 0000                KEYDATA:        EQU 0x08E0              ;Key data location updated by NMI routine
 0000                ;
 0000                ;
 0000                STARTROM:       ORG 0x0000
-0000   C3 00 02     RESTART00:      jp 0x0200		        ;Jump to MONSTART
+0000   C3 00 02     RESTART00:      jp STARTMON		        ;Jump to STARTMON
 0003   FF                           db 0xFF
 0004   FF                           db 0xFF
 0005   FF                           db 0xFF
 0006   FF                           db 0xFF
 0007   FF                           db 0xFF
-0008   2A C0 08     RESTART08:      ld hl,(0x08c0)          ;jump to vector stored at 0x08c0
+0008   2A C0 08     RESTART08:      ld hl,(VECTOR0)          ;jump to vector stored at 0x08c0
 000B   E9                           jp (hl)
 000C   FF                           db 0xFF
 000D   FF                           db 0xFF
 000E   FF                           db 0xFF
 000F   FF                           db 0xFF
-0010   2A C2 08     RESTART10:      ld hl,(0x08c2)          ;jump to vector stored at 0x08c2
+0010   2A C2 08     RESTART10:      ld hl,(VECTOR1)          ;jump to vector stored at 0x08c2
 0013   E9                           jp (hl)
 0014   FF                           db 0xFF
 0015   FF                           db 0xFF
 0016   FF                           db 0xFF
 0017   FF                           db 0xFF
-0018   2A C4 08     RESTART18:      ld hl,(0x08c4)          ;jump to vector stored at 0x08c4
+0018   2A C4 08     RESTART18:      ld hl,(VECTOR2)          ;jump to vector stored at 0x08c4
 001B   E9                           jp (hl)
 001C   FF                           db 0xFF
 001D   FF                           db 0xFF
 001E   FF                           db 0xFF
 001F   FF                           db 0xFF
-0020   2A C6 08     RESTART20:      ld hl,(0x08c6)          ;jump to vector stored at 0x08c6
+0020   2A C6 08     RESTART20:      ld hl,(VECTOR3)          ;jump to vector stored at 0x08c6
 0023   E9                           jp (hl)
 0024   FF                           db 0xFF
 0025   FF                           db 0xFF
 0026   FF                           db 0xFF
 0027   FF                           db 0xFF
-0028   2A C8 08     RESTART28:      ld hl,(0x08c8)          ;jump to vector stored at 0x08c8
+0028   2A C8 08     RESTART28:      ld hl,(VECTOR4)          ;jump to vector stored at 0x08c8
 002B   E9                           jp (hl)
 002C   FF                           db 0xFF
 002D   FF                           db 0xFF
 002E   FF                           db 0xFF
 002F   FF                           db 0xFF
-0030   2A CA 08     RESTART30:      ld hl,(0x08ca)          ;jump to vector stored at 0x08ca
+0030   2A CA 08     RESTART30:      ld hl,(VECTOR5)          ;jump to vector stored at 0x08ca
 0033   E9                           jp (hl)
 0034   FF                           db 0xFF
 0035   FF                           db 0xFF
 0036   FF                           db 0xFF
 0037   FF                           db 0xFF
-0038   2A CC 08     RESTART38:      ld hl,(0x08cc)          ;jump to vector stored at 0x08cc
+0038   2A CC 08     RESTART38:      ld hl,(VECTOR6)          ;jump to vector stored at 0x08cc
 003B   E9                           jp (hl)
 003C   FF                           db 0xFF
 003D   FF                           db 0xFF
@@ -103,7 +111,7 @@
 0065   FF                           db 0xFF
 0066   F5           NMINT:          ORG 0x066               ;NMI keyboard event
 0066   F5                           push af                 ;save af ;good idea! fixes Mon1
-0067   DB 00                        in a,(0x00)             ;a = key
+0067   DB 00                        in a,(0x00)             ;a = key port
 0069   32 E0 08                     ld (KEYDATA),a          ;save in ram
 006C   F1                           pop af                  ;restore af
 006D   ED 45                        retn                    ;correct return. fixes Mon1
@@ -173,10 +181,11 @@
 00AD   FF                           db 0xFF
 00AE   FF                           db 0xFF
 00AF   FF                           db 0xFF
-00B0   00                           nop
-00B1   09                           add hl,bc
-00B2   00                           nop
-00B3   00                           nop
+00B0   00          INITADDR:        db 0x00                  ;inital address (start of RAM)
+00B0   00                           db 0x00                  ;0
+00B1   09                           db 0x09                  ;9
+00B2   00                           db 0x00                  ;0
+00B3   00                           db 0x00                  ;0
 00B4   FF                           db 0xFF
 00B5   FF                           db 0xFF
 00B6   FF                           db 0xFF
@@ -201,7 +210,7 @@
 00C8   0B                           db 0x0b                 ;BY
 00C9   22                           db 0x22
 00CA   29                           db 0x29                 ;[space]
-00CB   17                           db 0x17                 ;NIC.   (Nic Enots - Ken Stone's old programming pseudonym))
+00CB   17                           db 0x17                 ;NIC.   (Nic Enots - Ken Stone's old                                                                    ;programming pseudonym))
 00CC   12                           db 0x12
 00CD   0C                           db 0x0c
 00CE   24                           db 0x24
@@ -211,7 +220,8 @@
 00D2   29                           db 0x29                 ;[space]
 00D3   29                           db 0x29                 ;[space]
 00D4   FE                           db 0xfe                 ;(repeat text)
-00D5   1C                           db 0x1c                 ;STONE  (Text for real surname hidden in code)
+00D5   1C                           db 0x1c                 ;STONE  (Text for real surname
+                                                            ;hidden in code)
 00D6   1D                           db 0x1d
 00D7   18                           db 0x18
 00D8   17                           db 0x17
@@ -222,24 +232,23 @@
 00DD   FF                           db 0xFF
 00DE   FF                           db 0xFF
 00DF   FF                           db 0xFF
-00E0   CD 89 02                     call 0x0289
+00E0   CD 89 02                     call GETEDITADDR        ;+ key
 00E3   03                           inc bc
-00E4   18 04                        jr 0x00ea
-00E6   CD 89 02                     call 0x0289
+00E4   18 04                        jr L00EA
+00E6   CD 89 02                     call GETEDITADDR        ;- key
 00E9   0B                           dec bc
-00EA   CD 90 04                     call 0x0490
-00ED   CD 70 02                     call 0x0270
-00F0   21 DF 08                     ld hl,0x08df
+00EA   CD 90 04     L00EA           call SETEDITADDR
+00ED   CD 70 02                     call GETADDRDATA
+00F0   21 DF 08                     ld hl,MODE
 00F3   CB C6                        set 0,(hl)
 00F5   CB 8E                        res 1,(hl)
-00F7   C3 78 03                     jp 0x0378
+00F7   C3 78 03                     jp POP_HLAF
 00FA   FF                           db 0xFF
 00FB   FF                           db 0xFF
 00FC   FF                           db 0xFF
 00FD   FF                           db 0xFF
 00FE   FF                           db 0xFF
 00FF   FF                           db 0xFF
-0100                TABLES:         ORG 0x0100              ;tables
 0100   FD           FRQTBL:         defb 0xfd               ;(division table for frequencies)
 0101   10 10                        db 0x10, 0x10
 0103   FD                           db 0xFD
@@ -375,7 +384,7 @@
 01AD   FE FE                        cp 0xfe
 01AF   28 F1                        jr z,0x01a2
 01B1   23                           inc hl
-01B2   CD 70 01                     call 0x0170         ;Call PlayTone
+01B2   CD 70 01                     call PLAYTONE         ;Call PlayTone
 01B5   18 EE                        jr 0x01a5
 01B7   FF                           db 0xFF
 01B8   FF                           db 0xFF
@@ -386,38 +395,38 @@
 01BD   FF                           db 0xFF
 01BE   FF                           db 0xFF
 01BF   FF                           db 0xFF
-01C0   21 DF 08                     ld hl,0x08df
+01C0   21 DF 08                     ld hl,MODE
 01C3   CB 46                        bit 0,(hl)
 01C5   20 07                        jr nz,0x01ce
 01C7   CB C6                        set 0,(hl)
 01C9   CB 8E                        res 1,(hl)
-01CB   C3 78 03                     jp 0x0378
+01CB   C3 78 03                     jp POP_HLAF
 01CE   CB 86                        res 0,(hl)
 01D0   CB CE                        set 1,(hl)
-01D2   C3 78 03                     jp 0x0378
+01D2   C3 78 03                     jp POP_HLAF
 01D5   FF                           db 0xFF
 01D6   FF                           db 0xFF
 01D7   FF                           db 0xFF
 01D8                MPDISPLAY:      ORG 0x01d8              ;MULTIPASS DISPLAY
 01D8   C5                           push bc
 01D9   06 80                        ld b,0x80
-01DB   CD A0 02                     call 0x02a0             ;Call DISPLAY
+01DB   CD A0 02                     call DISPLAY             ;Call DISPLAY
 01DE   10 FB                        djnz 0x01db
 01E0   C1                           pop bc
 01E1   C9                           ret
 01E2   FF                           db 0xFF
 01E3   FF                           db 0xFF
 01E4   ED 4B D2 08                  ld bc,(0x08d2)
-01E8   CD 90 04                     call 0x0490
-01EB   CD 70 02                     call 0x0270
-01EE   C3 78 03                     jp 0x0378
+01E8   CD 90 04                     call SETEDITADDR
+01EB   CD 70 02                     call GETADDRDATA
+01EE   C3 78 03                     jp POP_HLAF
 01F1   FF                           db 0xFF
 01F2   ED 4B D4 08                  ld bc,(0x08d4)
-01F6   CD 90 04                     call 0x0490
-01F9   CD 70 02                     call 0x0270
-01FC   C3 78 03                     jp 0x0378
+01F6   CD 90 04                     call SETEDITADDR
+01F9   CD 70 02                     call GETADDRDATA
+01FC   C3 78 03                     jp POP_HLAF
 01FF   FF                           db 0xFF
-0200                MONSTART:       ORG 0x0200              ;Main monitor program entry point.
+0200                STARTMON:       ORG 0x0200              ;Main monitor program entry point.
 0200   ED 73 E8 08                  ld (STORESP),sp          ;save stack point
 0204   31 00 09                     ld sp,RAMSTART            ;sp = RAMSTART
 0207   F5                           push af                 ;save registers
@@ -434,11 +443,11 @@
 0214   E5                           push hl
 0215   ED 57                        ld a,i
 0217   F5                           push af
-0218   AF                           xor a                   ;a = 0
-0219   32 CC 08                     ld (0x08cc),a           ;STORE1L = 0
-021C   32 CD 08                     ld (0x08cd),a           ;STORE1H = 0
+0218   AF                           xor a
+0219   32 CC 08                     ld (VECTOR6),a          ;VECTOR6 = 0
+021C   32 CD 08                     ld (VECTOR6+1),a
 021F   3E FF                        ld a,0xff
-0221   32 E0 08                     ld (KEYDATA),a           ;STORE2 = FF
+0221   32 E0 08                     ld (KEYDATA),a          ;key = FF
 0224   C3 40 02                     jp 0x0240
 0227   FF                           db 0xFF
 0228   FF                           db 0xFF
@@ -465,32 +474,32 @@
 023D   FF                           db 0xFF
 023E   FF                           db 0xFF
 023F   FF                           db 0xFF
-0240   31 C0 08     MONSTART2       ld sp,STACKSTART            ;sp = STACKSTART
+0240   31 C0 08     STARTMON2       ld sp,STACKSTART            ;sp = STACKSTART
 0243   AF                           xor a
 0244   D3 01                        out (0x01),a
 0246   D3 02                        out (0x02),a
-0248   21 B0 00                     ld hl,0x00b0
+0248   21 B0 00                     ld hl,INITADDR
 024B   11 D8 08                     ld de,ADDRESS
 024E   01 05 00                     ld bc,0x0005
 0251   ED B0                        ldir
-0253   CD 70 02                     call 0x0270
+0253   CD 70 02                     call GETADDRDATA
 0256   3E 08                        ld a,0x08
-0258   CD 70 01                     call 0x0170
+0258   CD 70 01                     call PLAYTONE
 025B   3E 0F                        ld a,0x0f
-025D   CD 70 01                     call 0x0170
+025D   CD 70 01                     call PLAYTONE
 0260   3E 01                        ld a,0x01
-0262   32 DF 08                     ld (0x08df),a
-0265   CD A0 02                     call 0x02a0
+0262   32 DF 08                     ld (MODE),a
+0265   CD A0 02                     call DISPLAY
 0268   CD 60 03                     call 0x0360
 026B   18 F8                        jr 0x0265
 026D   FF                           db 0xFF
 026E   FF                           db 0xFF
 026F   FF                           db 0xFF
-0270                GETADDRDATA:    org  0x0270             ;GetAddressedData
+0270                GETADDRDATA:    org  GETADDRDATA        ;GetAddressedData
 0270   F5                           push af                 ;save af, hl, bc
 0271   E5                           push hl
 0272   C5                           push bc
-0273   CD 89 02                     call 0x0289
+0273   CD 89 02                     call GETEDITADDR
 0276   E6 F0                        and 0xf0
 0278   0F                           rrca
 0279   0F                           rrca
@@ -524,7 +533,7 @@
 0289                ;the MSB) and loads A with CD. This routine is not transparent. HL is destroyed. BC
 0289                ;and A hold the results. If this routine is called during a user program that is not
 0289                ;an extension to the monitor, the result will have no meaning.
-0289                GETEDITADDR:    ORG 0x0289
+0289                GETEDITADDR:    ORG GETEDITADDR
 0289   21 D8 08                     ld hl,ADDRESS
 028C   7E                           ld a,(hl)
 028D   07                           rlca
@@ -546,67 +555,67 @@
 029D   0A                           ld a,(bc)
 029E   C9                           ret
 029F   FF                           db 0xFF
-02A0                DISPLAY:        org 0x02a0
-02A0   F5                           push af
+02A0                DISPLAY:        org DISPLAY
+02A0   F5                           push af                 ;save registers
 02A1   E5                           push hl
 02A2   D5                           push de
 02A3   C5                           push bc
-02A4   11 D8 08                     ld de,ADDRESS
-02A7   AF                           xor a
-02A8   D3 01                        out (0x01),a
-02AA   CD 50 03                     call 0x0350
-02AD   CB 4E                        bit 1,(hl)
-02AF   28 02                        jr z,0x02b3
-02B1   CB E7                        set 4,a
-02B3   D3 02                        out (0x02),a
-02B5   3E 20                        ld a,0x20
-02B7   D3 01                        out (0x01),a
-02B9   06 20                        ld b,0x20
-02BB   10 FE                        djnz 0x02bb
-02BD   AF                           xor a
-02BE   D3 01                        out (0x01),a
-02C0   CD 50 03                     call 0x0350
-02C3   CB 4E                        bit 1,(hl)
-02C5   28 02                        jr z,0x02c9
-02C7   CB E7                        set 4,a
-02C9   D3 02                        out (0x02),a
-02CB   3E 10                        ld a,0x10
-02CD   D3 01                        out (0x01),a
-02CF   06 20                        ld b,0x20
-02D1   10 FE                        djnz 0x02d1
-02D3   AF                           xor a
-02D4   D3 01                        out (0x01),a
-02D6   CD 50 03                     call 0x0350
-02D9   CB 4E                        bit 1,(hl)
-02DB   28 02                        jr z,0x02df
-02DD   CB E7                        set 4,a
-02DF   D3 02                        out (0x02),a
-02E1   3E 08                        ld a,0x08
-02E3   D3 01                        out (0x01),a
-02E5   06 20                        ld b,0x20
-02E7   10 FE                        djnz 0x02e7
-02E9   AF                           xor a
-02EA   D3 01                        out (0x01),a
-02EC   CD 50 03                     call 0x0350
-02EF   CB 4E                        bit 1,(hl)
-02F1   28 02                        jr z,0x02f5
-02F3   CB E7                        set 4,a
-02F5   D3 02                        out (0x02),a
-02F7   3E 04                        ld a,0x04
-02F9   D3 01                        out (0x01),a
-02FB   06 20                        ld b,0x20
-02FD   10 FE                        djnz 0x02fd
-02FF   AF                           xor a
-0300   D3 01                        out (0x01),a
-0302   00                           nop
-0303   C3 18 03                     jp 0x0318
+02A4   11 D8 08                     ld de,ADDRESS           ;de = ADDRESS buffer
+02A7   AF                           xor a                   ;a = 0
+02A8   D3 01                        out (0x01),a            ;clear digit port
+02AA   CD 50 03                     call HEX2SEG            ;convert (de) to segments -> a
+02AD   CB 4E                        bit 1,(hl)              ;check mode bit 1
+02AF   28 02                        jr z,0x02b3             ;if set
+02B1   CB E7                        set 4,a                 ;  set segment 4 of digit (decimal point)
+02B3   D3 02                        out (0x02),a            ;output a to segment port
+02B5   3E 20                        ld a,0x20               ;digit 020
+02B7   D3 01                        out (0x01),a            ;output a to digit port
+02B9   06 20                        ld b,0x20               ;
+02BB   10 FE        L2BB:           djnz L2BB               ;delay by 20
+02BD   AF                           xor a                   ;
+02BE   D3 01                        out (0x01),a            ;clear digit port
+02C0   CD 50 03                     call HEX2SEG            ;
+02C3   CB 4E                        bit 1,(hl)              ;
+02C5   28 02                        jr z,0x02c9             ;
+02C7   CB E7                        set 4,a                 ;
+02C9   D3 02                        out (0x02),a            ;
+02CB   3E 10                        ld a,0x10               ;digit 010
+02CD   D3 01                        out (0x01),a            ;output a to digit port
+02CF   06 20                        ld b,0x20               ;
+02D1   10 FE                        djnz 0x02d1             ;delay by 20
+02D3   AF                           xor a                   ;
+02D4   D3 01                        out (0x01),a            ;clear digit port
+02D6   CD 50 03                     call HEX2SEG            ;
+02D9   CB 4E                        bit 1,(hl)              ;
+02DB   28 02                        jr z,0x02df             ;
+02DD   CB E7                        set 4,a                 ;
+02DF   D3 02                        out (0x02),a            ;
+02E1   3E 08                        ld a,0x08               ;digit 080
+02E3   D3 01                        out (0x01),a            ;output a to digit port
+02E5   06 20                        ld b,0x20               ;
+02E7   10 FE                        djnz 0x02e7             ;delay by 20
+02E9   AF                           xor a                   ;
+02EA   D3 01                        out (0x01),a            ;clear digit port
+02EC   CD 50 03                     call HEX2SEG            ;
+02EF   CB 4E                        bit 1,(hl)              ;
+02F1   28 02                        jr z,0x02f5             ;
+02F3   CB E7                        set 4,a                 ;
+02F5   D3 02                        out (0x02),a            ;
+02F7   3E 04                        ld a,0x04               ;digit 040
+02F9   D3 01                        out (0x01),a            ;output a to digit port
+02FB   06 20                        ld b,0x20               ;
+02FD   10 FE                        djnz 0x02fd             ;delay by 20
+02FF   AF                           xor a                   ;
+0300   D3 01                        out (0x01),a            ;clear digit port
+0302   00                           nop                     ;
+0303   C3 18 03                     jp DISPLAY2
 0306   FF                           db 0xFF
 0307   FF                           db 0xFF
 0308   FF                           db 0xFF
 0309   FF                           db 0xFF
 030A   FF                           db 0xFF
 030B   FF                           db 0xFF
-030C   CD 89 02                     call 0x0289
+030C   CD 89 02                     call GETEDITADDR        ;go to current address
 030F   C5                           push bc
 0310   E1                           pop hl
 0311   31 C0 08                     ld sp,STACKSTART
@@ -614,33 +623,33 @@
 0315   FF                           db 0xFF
 0316   FF                           db 0xFF
 0317   FF                           db 0xFF
-0318   CD 50 03                     call 0x0350
+0318   CD 50 03     DISPLAY2:       call HEX2SEG
 031B   CB 46                        bit 0,(hl)
 031D   28 02                        jr z,0x0321
 031F   CB E7                        set 4,a
 0321   D3 02                        out (0x02),a
-0323   3E 02                        ld a,0x02
-0325   D3 01                        out (0x01),a
+0323   3E 02                        ld a,0x02               ;digit 020
+0325   D3 01                        out (0x01),a            ;output a to digit port
 0327   06 20                        ld b,0x20
-0329   10 FE                        djnz 0x0329
+0329   10 FE                        djnz 0x0329             ;delay by 20
 032B   AF                           xor a
-032C   D3 01                        out (0x01),a
-032E   CD 50 03                     call 0x0350
+032C   D3 01                        out (0x01),a            ;clear digit port
+032E   CD 50 03                     call HEX2SEG
 0331   CB 46                        bit 0,(hl)
 0333   28 02                        jr z,0x0337
 0335   CB E7                        set 4,a
 0337   D3 02                        out (0x02),a
-0339   3E 01                        ld a,0x01
-033B   D3 01                        out (0x01),a
+0339   3E 01                        ld a,0x01               ;digit 040
+033B   D3 01                        out (0x01),a            ;output a to digit port
 033D   06 20                        ld b,0x20
-033F   10 FE                        djnz 0x033f
+033F   10 FE                        djnz 0x033f             ;delay by 20
 0341   AF                           xor a
-0342   D3 01                        out (0x01),a
-0344   C1                           pop bc
+0342   D3 01                        out (0x01),a            ;clear digit port
+0344   C1                           pop bc                  ;restore registers
 0345   D1                           pop de
 0346   E1                           pop hl
 0347   F1                           pop af
-0348   C9                           ret
+0348   C9                           ret                     ;return
 0349   FF                           db 0xFF
 034A   FF                           db 0xFF
 034B   FF                           db 0xFF
@@ -652,34 +661,34 @@
 0350                ;corresponding seven-segment data. It is part of the display ;
 0350                ;destroyed, DE is incremented, A is converted from the value to its
 0350                ;7 segment form.
-0350                HEX2SEG:        org 0x0350              ;Hex2SevenSeg
-0350   21 80 00                     ld hl,0x0080
-0353   1A                           ld a,(de)
-0354   85                           add a,l
+0350                HEX2SEG:        org HEX2SEG             ;Hex2SevenSeg
+0350   21 80 00                     ld hl,SEVSEGDATA        ;hl = 7seg table
+0353   1A                           ld a,(de)               ;a = (de)
+0354   85                           add a,l                 ;hl += a
 0355   6F                           ld l,a
-0356   7E                           ld a,(hl)
-0357   13                           inc de
-0358   21 DF 08                     ld hl,0x08df
-035B   C9                           ret
+0356   7E                           ld a,(hl)               ;a = (hl + a)
+0357   13                           inc de                  ;de++
+0358   21 DF 08                     ld hl,MODE              ;hl = mode
+035B   C9                           ret                     ;return
 035C   FF                           db 0xFF
 035D   FF                           db 0xFF
 035E   FF                           db 0xFF
 035F   FF                           db 0xFF
-0360   F5                           push af
+0360   F5           GETKEY:         push af                 ;save af, hl
 0361   E5                           push hl
-0362   21 E0 08                     ld hl,KEYDATA
+0362   21 E0 08                     ld hl,KEYDATA           ;hl = KEYDATA
 0365   3E FF                        ld a,0xff
 0367   BE                           cp (hl)
-0368   28 0E                        jr z,0x0378
-036A   7E                           ld a,(hl)
-036B   E6 1F                        and 0x1f
-036D   CB 6E                        bit 5,(hl)
-036F   20 02                        jr nz,0x0373
-0371   C6 14                        add a,0x14
-0373   C3 A8 03                     jp 0x03a8
+0368   28 0E                        jr z,POP_HLAF           ;if (key)
+036A   7E                           ld a,(hl)               ;  a = (KEYDATA)
+036B   E6 1F                        and 0x1f                ;  a = a & 1f
+036D   CB 6E                        bit 5,(hl)              ;  test shift bit
+036F   20 02                        jr nz,L373              ;  if (shift)
+0371   C6 14                        add a,0x14              ;    a += 0x0014
+0373   C3 A8 03     L373:           jp 0x03a8
 0376   FF                           db 0xFF
 0377   FF                           db 0xFF
-0378   E1                           pop hl
+0378   E1           POP_HLAF:       pop hl                  ;restore hl, af
 0379   F1                           pop af
 037A   C9                           ret
 037B   FF                           db 0xFF
@@ -691,7 +700,7 @@
 0381   FF                           db 0xFF
 0382   FF                           db 0xFF
 0383   FF                           db 0xFF
-0384   CD 89 02                     call 0x0289
+0384   CD 89 02                     call GETEDITADDR
 0387   C5                           push bc
 0388   DD E1                        pop ix
 038A   DD 23                        inc ix
@@ -705,13 +714,13 @@
 039A   18 EE                        jr 0x038a
 039C   3E 00                        ld a,0x00
 039E   32 FF 3F                     ld (0x3fff),a
-03A1   CD 70 02                     call 0x0270
-03A4   C3 78 03                     jp 0x0378
+03A1   CD 70 02                     call GETADDRDATA
+03A4   C3 78 03                     jp POP_HLAF
 03A7   FF                           db 0xFF
 03A8   C6 01                        add a,0x01
-03AA   CD 70 01                     call 0x0170
-03AD   C3 21 04                     jp 0x0421
-03B0   CD 89 02                     call 0x0289
+03AA   CD 70 01                     call PLAYTONE
+03AD   C3 21 04                     jp L421
+03B0   CD 89 02                     call GETEDITADDR
 03B3   0B                           dec bc
 03B4   DD 21 FE 3F                  ld ix,0x3ffe
 03B8   DD 7E 00                     ld a,(ix+0)
@@ -726,8 +735,8 @@
 03C8   BC                           cp h
 03C9   20 ED                        jr nz,0x03b8
 03CB   DD 36 01 00                  ld (ix+1),0x00
-03CF   CD 70 02                     call 0x0270
-03D2   C3 78 03                     jp 0x0378
+03CF   CD 70 02                     call GETADDRDATA
+03D2   C3 78 03                     jp POP_HLAF
 03D5   FF                           db 0xFF
 03D6   FF                           db 0xFF
 03D7   FF                           db 0xFF
@@ -737,7 +746,7 @@
 03DA   DD E5                        push ix
 03DC   C5                           push bc
 03DD   AF                           xor a
-03DE   32 DF 08                     ld (0x08df),a
+03DE   32 DF 08                     ld (MODE),a
 03E1   06 06                        ld b,0x06
 03E3   21 D8 08                     ld hl,0x08d8
 03E6   3E 29                        ld a,0x29
@@ -765,7 +774,7 @@
 040F   32 DD 08                     ld (0x08dd),a
 0412   23                           inc hl
 0413   06 40                        ld b,0x40
-0415   CD A0 02                     call 0x02a0
+0415   CD A0 02                     call DISPLAY
 0418   10 FB                        djnz 0x0415
 041A   18 D3                        jr 0x03ef
 041C   FF                           db 0xFF
@@ -773,18 +782,18 @@
 041E   FF                           db 0xFF
 041F   FF                           db 0xFF
 0420   FF                           db 0xFF
-0421   D6 01                        sub 0x01
+0421   D6 01         L421:          sub 0x01
 0423   36 FF                        ld (hl),0xff
 0425   CB 67                        bit 4,a
 0427   C2 C0 04                     jp nz,0x04c0
 042A   CB 6F                        bit 5,a
 042C   C2 C0 04                     jp nz,0x04c0
-042F   21 DF 08                     ld hl,0x08df
+042F   21 DF 08                     ld hl,MODE
 0432   CB 46                        bit 0,(hl)
 0434   CA 55 04                     jp z,0x0455
 0437   57                           ld d,a
-0438   CD 89 02                     call 0x0289
-043B   21 DF 08                     ld hl,0x08df
+0438   CD 89 02                     call GETEDITADDR
+043B   21 DF 08                     ld hl,MODE
 043E   CB 5E                        bit 3,(hl)
 0440   20 03                        jr nz,0x0445
 0442   AF                           xor a
@@ -796,19 +805,19 @@
 0449   E6 F0                        and 0xf0
 044B   82                           add a,d
 044C   02                           ld (bc),a
-044D   CD 70 02                     call 0x0270
+044D   CD 70 02                     call GETADDRDATA
 0450   C3 7D 03                     jp 0x037d
 0453   FF                           db 0xFF
 0454   FF                           db 0xFF
 0455   57                           ld d,a
-0456   21 DF 08                     ld hl,0x08df
+0456   21 DF 08                     ld hl,MODE
 0459   CB 9E                        res 3,(hl)
 045B   CB 66                        bit 4,(hl)
 045D   20 08                        jr nz,0x0467
 045F   01 00 00                     ld bc,0x0000
-0462   CD 90 04                     call 0x0490
+0462   CD 90 04                     call SETEDITADDR
 0465   CB E6                        set 4,(hl)
-0467   CD 89 02                     call 0x0289
+0467   CD 89 02                     call GETEDITADDR
 046A   78                           ld a,b
 046B   07                           rlca
 046C   07                           rlca
@@ -832,8 +841,8 @@
 0480   E6 F0                        and 0xf0
 0482   82                           add a,d
 0483   4F                           ld c,a
-0484   CD 90 04                     call 0x0490
-0487   CD 70 02                     call 0x0270
+0484   CD 90 04                     call SETEDITADDR
+0487   CD 70 02                     call GETADDRDATA
 048A   C3 7D 03                     jp 0x037d
 048D   FF                           db 0xFF
 048E   FF                           db 0xFF
@@ -841,38 +850,37 @@
 0490                ;SetEditorAddress 0490 is the opposite of the GetEditorAddress
 0490                ;0289 routine.
 0490                ;It loads the display buffer (08D8, 08D9, 08DA, 08DB) with the
-0490                ;value held in BC.
-0490                ;AThis routine is transparent.
-0490                SETEDITADDR:    org 0x0490              ;SetEditorAddress
-0490   F5                           push af
+0490                ;value held in BC. This routine is transparent.
+0490                SETEDITADDR:    org SETEDITADDR         ;SetEditorAddress
+0490   F5                           push af                 ;save af, hl
 0491   E5                           push hl
-0492   21 D8 08                     ld hl,ADDRESS
-0495   78                           ld a,b
-0496   E6 F0                        and 0xf0
-0498   07                           rlca
+0492   21 D8 08                     ld hl,ADDRESS           ;hl points to ADDRESS buffer
+0495   78                           ld a,b                  ;a = b
+0496   E6 F0                        and 0xf0                ;mask out lower nibble
+0498   07                           rlca                    ;rotate upper nibble into lower nibble
 0499   07                           rlca
 049A   07                           rlca
 049B   07                           rlca
-049C   77                           ld (hl),a
-049D   23                           inc hl
-049E   78                           ld a,b
-049F   E6 0F                        and 0x0f
-04A1   77                           ld (hl),a
-04A2   23                           inc hl
-04A3   79                           ld a,c
-04A4   E6 F0                        and 0xf0
-04A6   07                           rlca
+049C   77                           ld (hl),a               ;(hl) = a
+049D   23                           inc hl                  ;hl++
+049E   78                           ld a,b                  ;a = b
+049F   E6 0F                        and 0x0f                ;mask lower nibble
+04A1   77                           ld (hl),a               ;(hl) = a
+04A2   23                           inc hl                  ;hl++
+04A3   79                           ld a,c                  ;a = c
+04A4   E6 F0                        and 0xf0                ;mask upper nibble
+04A6   07                           rlca                    ;rotate upper nibble into lower nibble
 04A7   07                           rlca
 04A8   07                           rlca
 04A9   07                           rlca
-04AA   77                           ld (hl),a
-04AB   23                           inc hl
-04AC   79                           ld a,c
-04AD   E6 0F                        and 0x0f
-04AF   77                           ld (hl),a
-04B0   E1                           pop hl
+04AA   77                           ld (hl),a               ;(hl) = a
+04AB   23                           inc hl                  ;hl++
+04AC   79                           ld a,c                  ;a = c
+04AD   E6 0F                        and 0x0f                ;mask lower nibble
+04AF   77                           ld (hl),a               ;(hl) = a
+04B0   E1                           pop hl                  ;restore hl, af
 04B1   F1                           pop af
-04B2   C9                           ret
+04B2   C9                           ret                     ;return
 04B3   FF                           db 0xFF
 04B4   FF                           db 0xFF
 04B5   FF                           db 0xFF
@@ -886,7 +894,7 @@
 04BD   FF                           db 0xFF
 04BE   FF                           db 0xFF
 04BF   FF                           db 0xFF
-04C0   21 DF 08                     ld hl,0x08df
+04C0   21 DF 08                     ld hl,MODE
 04C3   CB 9E                        res 3,(hl)
 04C5   CB A6                        res 4,(hl)
 04C7   FE 10                        cp 0x10
@@ -937,7 +945,7 @@
 0537   CA FF FF                     jp z,0xffff
 053A   FE 27                        cp 0x27
 053C   CA E4 01                     jp z,0x01e4
-053F   C3 78 03                     jp 0x0378
+053F   C3 78 03                     jp POP_HLAF
 0542   FF                           RST   0x38
 0543   FF                           RST   0x38
 0544   FF                           RST   0x38
@@ -952,7 +960,7 @@
 054D   FF                           RST   0x38
 054E   FF                           RST   0x38
 054F   FF                           RST   0x38
-0550   CD 89 02                     call 0x0289
+0550   CD 89 02                     call GETEDITADDR
 0553   60                           ld h,b
 0554   69                           ld l,c
 0555   3A E1 08                     ld a,(0x08e1)
@@ -961,7 +969,7 @@
 055A   20 FC                        jr nz,0x0558
 055C   44                           ld b,h
 055D   4D                           ld c,l
-055E   CD 90 04                     call 0x0490
+055E   CD 90 04                     call SETEDITADDR
 0561   C3 53 02                     jp 0x0253
 0564   FF                           db 0xFF
 0565   FF                           db 0xFF
