@@ -3,6 +3,7 @@
 0000                ; Released under the GNU GENERAL PUBLIC LICENSE 3.0
 0000                ;
 0000                STARTRAM:       EQU     0x800
+0000                STARTSTACK:     EQU     0x0ff0
 0000                DISPLAY:        EQU     0x0ff1          ;display start (data part)
 0000                DISPLAY2:       EQU     0x0ff3          ;display address part offset
 0000                DISPLAY3:       EQU     0x0ff4          ;display address part offset
@@ -114,7 +115,7 @@
 006A   ED 47                        LD      i,a             ;move to i register
 006C   C9                           RET                     ;BUG: should be RETN
 006D                                                        ;b   ranches here after WRITEDISP
-006D   31 D0 0F     WRITEDISP2:     LD      sp,0x0ff0
+006D   31 D0 0F     WRITEDISP2:     LD      sp,STARTSTACK
 0070   CD 31 01                     CALL    GETKEY          ;(blocking) get key
 0073   CD 8E 01                     CALL    BEEP            ;beep
 0076   3A F9 0F                     LD      a,(MODE)        ;a = addr/data
@@ -999,7 +1000,7 @@
 057E   FF                           DB      0xFF
 057F   FF                           DB      0xFF
 0580   21 00 08     STARTMON:       LD      hl,STARTRAM
-0583   31 F0 0F                     LD      sp,0x0ff0       ;set stack to end of ram - 32
+0583   31 F0 0F                     LD      sp,STARTSTACK   ;set stack 
 0586   DD 21 F1 0F                  LD      ix,DISPLAY      ;ix = DISPLAY
 058A   22 F7 0F                     LD      (ADDRESS),hl    ;address_ptr = STARTRAM
 058D   AF                           XOR     a
