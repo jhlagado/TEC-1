@@ -1,8 +1,7 @@
 0000                             ;
-0000                             ; TEC-1 Monitor ROM v1A (c) John Hardy 1983 - 2018
+0000                             ; TEC-1 Monitor ROM v1 (c) John Hardy 1983 - 2018
 0000                             ; Released under the GNU GENERAL PUBLIC LICENSE 3.0
 0000                             ;
-0000                             ; SEQUENCER at 0x05B0 written by Ken Stone
 0000                STARTRAM:   EQU   0x800
 0000                DISPLAY:   EQU   0x0ff1   ;display start (data part)
 0000                DISPLAY2:   EQU   0x0ff3   ;display address part offset
@@ -31,7 +30,7 @@
 0000                ENDOFTUNE:   EQU   0x1F   ;end of tune
 0000                NIMMATCHES:   EQU   0x0ffa   ;nim: number of matches
 0000                          .ORG   0x0000
-0000   C3 F0 05               JP   STARTMON
+0000   C3 80 05               JP   STARTMON
 0003   FF                     DB   0xFF
 0004   FF                     DB   0xFF
 0005   FF                     DB   0xFF
@@ -71,15 +70,9 @@
 0033   C3 41 00               JP   STARTTUNE
 0036   FF                     DB   0xFF
 0037   FF                     DB   0xFF
-0038   C7                     RST   0x00   ;Maskable Interrupt Mode 1
-0039   FF                     DB   0xFF
-003A   FF                     DB   0xFF
-003B   FF                     DB   0xFF
-003C   FF                     DB   0xFF
-003D   FF                     DB   0xFF
-003E   FF                     DB   0xFF
-003F   FF                     DB   0xFF
-0040   FF                     DB   0xFF
+0038   21 D1 02               LD   hl,0x02d1
+003B   22 00 08               LD   (0x0800),hl
+003E   C3 70 02               JP   0x0270
 0041   22 00 08     STARTTUNE:   LD   (STARTRAM),hl   ;load address of tune from STARTRAMAM
 0044   C3 B0 01               JP   PLAYTUNE
 0047   FF                     DB   0xFF
@@ -121,7 +114,7 @@
 006A   ED 47                  LD   i,a   ;move to i register
 006C   C9                     RET      ;BUG: should be RETN
 006D                             ;b   ranches here after WRITEDISP
-006D   31 D0 0F     WRITEDISP2:   LD   sp,0x0fd0
+006D   31 F0 0F     WRITEDISP2:   LD   sp,0x0ff0
 0070   CD 31 01               CALL   GETKEY   ;(blocking) get key
 0073   CD 8E 01               CALL   BEEP   ;beep
 0076   3A F9 0F               LD   a,(MODE)   ;a = addr/data
@@ -527,15 +520,15 @@
 02BD   E8                     DB   0xE8   ;0A J
 02BE   CE                     DB   0xCE   ;0B K
 02BF   C2                     DB   0xC2   ;0C L
-02C0   6B                     DB   0x6B   ;0D N
+02C0   64                     DB   0x64   ;0D N
 02C1   EB                     DB   0xEB   ;0E O
 02C2   4F                     DB   0x4F   ;0F P
 02C3   2F                     DB   0x2F   ;10 Q
-02C4   43                     DB   0x43   ;11 R
+02C4   44                     DB   0x44   ;11 R
 02C5   A7                     DB   0xA7   ;12 S
 02C6   46                     DB   0x46   ;13 T
-02C7   EA                     DB   0xEA   ;14 U
-02C8   E0                     DB   0xE0   ;15 V
+02C7   E0                     DB   0xE0   ;14 U
+02C8   A9                     DB   0xA9   ;15 V
 02C9   AE                     DB   0xAE   ;16 Y
 02CA   CD                     DB   0xCD   ;17 Z
 02CB   04                     DB   0x04   ;18 -
@@ -852,7 +845,7 @@
 048F   FF                     DB   0xFF
 0490                             ;LUNALANDER
 0490                             ;you must land your luna module on the moon
-0490                             ;as gently as possible while gravity is pulling you down.wn.
+0490                             ;as gently as possible while gravity is pulling you down
 0490                             ;You can use the + key to fire your engine briefly
 0490                             ;this will slow down your descent but it also uses fuell
 0490                             ;if you run out of fuel you will crash
@@ -1005,8 +998,8 @@
 057D   FF                     DB   0xFF
 057E   FF                     DB   0xFF
 057F   FF                     DB   0xFF
-0580   21 00 08     STARTMON2:   LD   hl,STARTRAM
-0583   31 D0 0F               LD   sp,0x0fd0   ;set stack to end of ram - 32
+0580   21 00 08     STARTMON:   LD   hl,STARTRAM
+0583   31 F0 0F               LD   sp,0x0ff0   ;set stack to end of ram - 32
 0586   DD 21 F1 0F            LD   ix,DISPLAY   ;ix = DISPLAY
 058A   22 F7 0F               LD   (ADDRESS),hl   ;address_ptr = STARTRAM
 058D   AF                     XOR   a
@@ -1028,58 +1021,97 @@
 05AD   FF                     DB   0xFF
 05AE   FF                     DB   0xFF
 05AF   FF                     DB   0xFF
-05B0   FF FF FF               DB   0xFF,0xFF,0xFF
-05B3   FF FF FF               DB   0xFF,0xFF,0xFF
+05B0   FF                     DB   0xFF
+05B1   FF                     DB   0xFF
+05B2   FF                     DB   0xFF
+05B3   FF                     DB   0xFF
+05B4   FF                     DB   0xFF
+05B5   FF                     DB   0xFF
 05B6   FF                     DB   0xFF
-05B7   FF FF                  DB   0xFF,0xFF
-05B9   FF FF FF               DB   0xFF,0xFF,0xFF
-05BC   FF FF FF               DB   0xFF,0xFF,0xFF
-05BF   FF FF FF               DB   0xFF,0xFF,0xFF
-05C2   FF FF                  DB   0xFF,0xFF
+05B7   FF                     DB   0xFF
+05B8   FF                     DB   0xFF
+05B9   FF                     DB   0xFF
+05BA   FF                     DB   0xFF
+05BB   FF                     DB   0xFF
+05BC   FF                     DB   0xFF
+05BD   FF                     DB   0xFF
+05BE   FF                     DB   0xFF
+05BF   FF                     DB   0xFF
+05C0   FF                     DB   0xFF
+05C1   FF                     DB   0xFF
+05C2   FF                     DB   0xFF
+05C3   FF                     DB   0xFF
 05C4   FF                     DB   0xFF
-05C5   FF FF                  DB   0xFF,0xFF
-05C7   FF FF FF               DB   0xFF,0xFF,0xFF
-05CA   FF FF FF               DB   0xFF,0xFF,0xFF
-05CD   FF FF FF               DB   0xFF,0xFF,0xFF
-05D0   FF FF                  DB   0xFF,0xFF
-05D2   FF FF FF               DB   0xFF,0xFF,0xFF
+05C5   FF                     DB   0xFF
+05C6   FF                     DB   0xFF
+05C7   FF                     DB   0xFF
+05C8   FF                     DB   0xFF
+05C9   FF                     DB   0xFF
+05CA   FF                     DB   0xFF
+05CB   FF                     DB   0xFF
+05CC   FF                     DB   0xFF
+05CD   FF                     DB   0xFF
+05CE   FF                     DB   0xFF
+05CF   FF                     DB   0xFF
+05D0   FF                     DB   0xFF
+05D1   FF                     DB   0xFF
+05D2   FF                     DB   0xFF
+05D3   FF                     DB   0xFF
+05D4   FF                     DB   0xFF
 05D5   FF                     DB   0xFF
 05D6   FF                     DB   0xFF
-05D7   FF FF                  DB   0xFF,0xFF
-05D9   FF FF FF               DB   0xFF,0xFF,0xFF
+05D7   FF                     DB   0xFF
+05D8   FF                     DB   0xFF
+05D9   FF                     DB   0xFF
+05DA   FF                     DB   0xFF
+05DB   FF                     DB   0xFF
 05DC   FF                     DB   0xFF
 05DD   FF                     DB   0xFF
-05DE   FF FF FF               DB   0xFF,0xFF,0xFF
-05E1   FF FF FF               DB   0xFF,0xFF,0xFF
+05DE   FF                     DB   0xFF
+05DF   FF                     DB   0xFF
+05E0   FF                     DB   0xFF
+05E1   FF                     DB   0xFF
+05E2   FF                     DB   0xFF
+05E3   FF                     DB   0xFF
 05E4   FF                     DB   0xFF
 05E5   FF                     DB   0xFF
 05E6   FF                     DB   0xFF
-05E7   FF FF FF               DB   0xFF,0xFF,0xFF
+05E7   FF                     DB   0xFF
+05E8   FF                     DB   0xFF
+05E9   FF                     DB   0xFF
 05EA   FF                     DB   0xFF
 05EB   FF                     DB   0xFF
 05EC   FF                     DB   0xFF
 05ED   FF                     DB   0xFF
 05EE   FF                     DB   0xFF
 05EF   FF                     DB   0xFF
-05F0                STARTMON:   .ORG   0x05F0
-05F0   ED 73 D8 0F            LD   (0x0fd8),sp   ;save sp here, why?
-05F4   31 F0 0F               LD   sp,0x0ff0   ;init stack pointer
-05F7                             ;save all registers, why?
-05F7   F5                     PUSH   af   ;save af
-05F8   C5                     PUSH   bc   ;save bc
-05F9   D5                     PUSH   de   ;save de
-05FA   E5                     PUSH   hl   ;save hl
-05FB   DD E5                  PUSH   ix   ;save ix
-05FD   FD E5                  PUSH   iy   ;save iy
-05FF   08                     EX   af,af'
-0600   D9                     EXX
-0601   F5                     PUSH   af   ;save af'
-0602   C5                     PUSH   bc   ;save bc'
-0603   D5                     PUSH   de   ;save de'
-0604   E5                     PUSH   hl   ;save hl'
-0605   ED 57                  LD   a,i
-0607   F5                     PUSH   af   ;save i
-0608   C3 80 05               JP   STARTMON2
+05F0   FF                     DB   0xFF
+05F1   FF                     DB   0xFF
+05F2   FF                     DB   0xFF
+05F3   FF                     DB   0xFF
+05F4   FF                     DB   0xFF
+05F5   FF                     DB   0xFF
+05F6   FF                     DB   0xFF
+05F7   FF                     DB   0xFF
+05F8   FF                     DB   0xFF
+05F9   FF                     DB   0xFF
+05FA   FF                     DB   0xFF
+05FB   FF                     DB   0xFF
+05FC   FF                     DB   0xFF
+05FD   FF                     DB   0xFF
+05FE   FF                     DB   0xFF
+05FF   FF                     DB   0xFF
+0600   FF                     DB   0xFF
+0601   FF                     DB   0xFF
+0602   FF                     DB   0xFF
+0603   FF                     DB   0xFF
+0604   FF                     DB   0xFF
+0605   FF                     DB   0xFF
+0606   FF                     DB   0xFF
+0607   FF                     DB   0xFF
+0608   FF                     DB   0xFF
+0609   FF                     DB   0xFF
+060A   FF                     DB   0xFF
 060B   FF                     DB   0xFF
 060C   FF                     DB   0xFF
 060D   FF                     DB   0xFF
@@ -1551,329 +1583,333 @@
 07DF   FF                     DB   0xFF
 07E0   FF                     DB   0xFF
 07E1   FF                     DB   0xFF
-07E2   6A                     LD   l,d   ;unused junk DNA ;-)
-07E3   C7                     RST   0x00
-07E4   FB                     EI
-07E5   C7                     RST   0x00
-07E6   50                     LD   d,b
-07E7   0A                     LD   a,(bc)
-07E8   93                     SUB   e
-07E9   C7                     RST   0x00
-07EA   FB                     EI
-07EB   C7                     RST   0x00
-07EC   8D                     ADC   a,l
-07ED   C6 BF                  ADD   a,0xbf
-07EF   0D                     DEC   c
-07F0   B1                     OR   c
-07F1   C6 43                  ADD   a,0x43
-07F3   01 0B BC               LD   bc,0xbc0b
-07F6   00                     NOP
-07F7   0F                     RRCA
-07F8   E0                     RET   po
-07F9   0F                     RRCA
-07FA   6D                     LD   l,l
-07FB   01 43 01               LD   bc,0x0143
-07FE   6E                     LD   l,(hl)
-07FF   08                     EX   af,af'
+07E2   FF                     DB   0xFF
+07E3   FF                     DB   0xFF
+07E4   FF                     DB   0xFF
+07E5   FF                     DB   0xFF
+07E6   FF                     DB   0xFF
+07E7   FF                     DB   0xFF
+07E8   FF                     DB   0xFF
+07E9   FF                     DB   0xFF
+07EA   FF                     DB   0xFF
+07EB   FF                     DB   0xFF
+07EC   FF                     DB   0xFF
+07ED   FF                     DB   0xFF
+07EE   FF                     DB   0xFF
+07EF   FF                     DB   0xFF
+07F0   FF                     DB   0xFF
+07F1   FF                     DB   0xFF
+07F2   FF                     DB   0xFF
+07F3   FF                     DB   0xFF
+07F4   FF                     DB   0xFF
+07F5   FF                     DB   0xFF
+07F6   FF                     DB   0xFF
+07F7   FF                     DB   0xFF
+07F8   FF                     DB   0xFF
+07F9   FF                     DB   0xFF
+07FA   FF                     DB   0xFF
+07FB   FF                     DB   0xFF
+07FC   FF                     DB   0xFF
+07FD   FF                     DB   0xFF
+07FE   FF                     DB   0xFF
+07FF   FF                     DB   0xFF
 
 
-STARTRAM:           0800 DEFINED AT LINE 6
-                    > USED AT LINE 83
-                    > USED AT LINE 335
-                    > USED AT LINE 482
-                    > USED AT LINE 814
-                    > USED AT LINE 861
-                    > USED AT LINE 920
-                    > USED AT LINE 1008
-DISPLAY:            0FF1 DEFINED AT LINE 7
-                    > USED AT LINE 175
-                    > USED AT LINE 204
-                    > USED AT LINE 483
-                    > USED AT LINE 486
-                    > USED AT LINE 508
-                    > USED AT LINE 633
-                    > USED AT LINE 639
-                    > USED AT LINE 657
-                    > USED AT LINE 677
-                    > USED AT LINE 755
-                    > USED AT LINE 759
-                    > USED AT LINE 821
-                    > USED AT LINE 860
-                    > USED AT LINE 869
-                    > USED AT LINE 876
-                    > USED AT LINE 1010
-DISPLAY2:           0FF3 DEFINED AT LINE 8
-                    > USED AT LINE 171
-                    > USED AT LINE 196
-                    > USED AT LINE 682
-DISPLAY3:           0FF4 DEFINED AT LINE 9
-                    > USED AT LINE 648
-DISPLAY4:           0FF5 DEFINED AT LINE 10
-                    > USED AT LINE 643
-                    > USED AT LINE 647
-                    > USED AT LINE 695
-DISPLAY5:           0FF6 DEFINED AT LINE 11
-                    > USED AT LINE 492
-                    > USED AT LINE 665
-                    > USED AT LINE 693
-                    > USED AT LINE 781
-                    > USED AT LINE 804
-DISPLAY6:           0FF7 DEFINED AT LINE 12
-                    > USED AT LINE 491
-ADDRESS:            0FF7 DEFINED AT LINE 13
-                    > USED AT LINE 135
-                    > USED AT LINE 155
-                    > USED AT LINE 159
-                    > USED AT LINE 161
-                    > USED AT LINE 163
-                    > USED AT LINE 165
-                    > USED AT LINE 167
-                    > USED AT LINE 185
-                    > USED AT LINE 1011
-MODE:               0FF9 DEFINED AT LINE 14
-                    > USED AT LINE 127
-                    > USED AT LINE 183
-                    > USED AT LINE 1013
-KEYFLAG:            0FFA DEFINED AT LINE 15
-                    > USED AT LINE 145
-                    > USED AT LINE 296
-                    > USED AT LINE 303
-                    > USED AT LINE 1014
-INV_SCORE:          0FFA DEFINED AT LINE 17
-                    > USED AT LINE 635
-                    > USED AT LINE 681
-                    > USED AT LINE 701
-                    > USED AT LINE 704
-INV_GUN:            0FFB DEFINED AT LINE 18
-                    > USED AT LINE 636
-                    > USED AT LINE 663
-                    > USED AT LINE 688
-                    > USED AT LINE 690
-PORTKEYB:           0000 DEFINED AT LINE 19
-PORTDIGIT:          0001 DEFINED AT LINE 20
-                    > USED AT LINE 251
-                    > USED AT LINE 257
-                    > USED AT LINE 318
-PORTSPKR:           0001 DEFINED AT LINE 21
-PORTSEGS:           0002 DEFINED AT LINE 22
-                    > USED AT LINE 248
-                    > USED AT LINE 316
-PORTSLOW:           0003 DEFINED AT LINE 23
-PORTFAST:           0004 DEFINED AT LINE 24
-SLOWSEQ:            0800 DEFINED AT LINE 25
-FASTSEQ:            0B00 DEFINED AT LINE 26
-ENDOFSEQ:           00FF DEFINED AT LINE 27
-REPEATTEXT:         001E DEFINED AT LINE 28
-ENDOFTEXT:          001F DEFINED AT LINE 29
-REPEATTUNE:         001E DEFINED AT LINE 30
-ENDOFTUNE:          001F DEFINED AT LINE 31
-NIMMATCHES:         0FFA DEFINED AT LINE 32
-                    > USED AT LINE 757
-                    > USED AT LINE 773
-                    > USED AT LINE 779
-                    > USED AT LINE 787
-                    > USED AT LINE 800
-                    > USED AT LINE 803
-                    > USED AT LINE 822
-STARTTUNE:          0041 DEFINED AT LINE 83
-                    > USED AT LINE 67
-                    > USED AT LINE 71
-NMINT:              0066 DEFINED AT LINE 118
-WRITEDISP2:         006D DEFINED AT LINE 124
-                    > USED AT LINE 193
-ADDRKEY:            0088 DEFINED AT LINE 135
-                    > USED AT LINE 133
-WRITEDISP3:         0096 DEFINED AT LINE 141
-                    > USED AT LINE 129
-DATAKEY:            00B7 DEFINED AT LINE 155
-                    > USED AT LINE 143
-GOADDR:             00C2 DEFINED AT LINE 159
-                    > USED AT LINE 150
-DECADDR:            00C6 DEFINED AT LINE 161
-                    > USED AT LINE 152
-INCADDR:            00D0 DEFINED AT LINE 165
-                    > USED AT LINE 154
-ADDRDISP:           00DA DEFINED AT LINE 169
-                    > USED AT LINE 140
-                    > USED AT LINE 148
-DATADISP:           00E3 DEFINED AT LINE 173
-                    > USED AT LINE 134
-                    > USED AT LINE 158
-                    > USED AT LINE 164
+STARTRAM:           0800 DEFINED AT LINE 5
+                    > USED AT LINE 76
+                    > USED AT LINE 328
+                    > USED AT LINE 475
+                    > USED AT LINE 807
+                    > USED AT LINE 854
+                    > USED AT LINE 913
+                    > USED AT LINE 1001
+DISPLAY:            0FF1 DEFINED AT LINE 6
                     > USED AT LINE 168
-                    > USED AT LINE 1021
-WRITEDISP:          00EA DEFINED AT LINE 183
-                    > USED AT LINE 172
-DPLOOP:             00FA DEFINED AT LINE 190
-                    > USED AT LINE 192
-WRITEADDR:          0102 DEFINED AT LINE 196
-                    > USED AT LINE 186
-WRITEDATA:          010E DEFINED AT LINE 204
-                    > USED AT LINE 188
-WRITEHEX:           0115 DEFINED AT LINE 210
-                    > USED AT LINE 198
-                    > USED AT LINE 200
-                    > USED AT LINE 205
-                    > USED AT LINE 683
-                    > USED AT LINE 823
-                    > USED AT LINE 877
-                    > USED AT LINE 881
-HEX2SEGS:           0126 DEFINED AT LINE 225
-                    > USED AT LINE 211
-                    > USED AT LINE 219
-                    > USED AT LINE 711
-                    > USED AT LINE 826
-GETKEY:             0131 DEFINED AT LINE 236
-                    > USED AT LINE 125
-                    > USED AT LINE 242
-                    > USED AT LINE 684
-                    > USED AT LINE 766
-                    > USED AT LINE 816
-                    > USED AT LINE 922
-SCANDISP:           0140 DEFINED AT LINE 245
-                    > USED AT LINE 238
-                    > USED AT LINE 512
-                    > USED AT LINE 666
-                    > USED AT LINE 784
-                    > USED AT LINE 884
-L145:               0145 DEFINED AT LINE 247
-                    > USED AT LINE 258
-SDDELAY:            0154 DEFINED AT LINE 255
-                    > USED AT LINE 256
-HEXSEGTBL:          015F DEFINED AT LINE 261
-                    > USED AT LINE 226
-GETADDRKEY:         016F DEFINED AT LINE 281
-                    > USED AT LINE 136
-GETDATAKEY:         017B DEFINED AT LINE 294
+                    > USED AT LINE 197
+                    > USED AT LINE 476
+                    > USED AT LINE 479
+                    > USED AT LINE 501
+                    > USED AT LINE 626
+                    > USED AT LINE 632
+                    > USED AT LINE 650
+                    > USED AT LINE 670
+                    > USED AT LINE 748
+                    > USED AT LINE 752
+                    > USED AT LINE 814
+                    > USED AT LINE 853
+                    > USED AT LINE 862
+                    > USED AT LINE 869
+                    > USED AT LINE 1003
+DISPLAY2:           0FF3 DEFINED AT LINE 7
+                    > USED AT LINE 164
+                    > USED AT LINE 189
+                    > USED AT LINE 675
+DISPLAY3:           0FF4 DEFINED AT LINE 8
+                    > USED AT LINE 641
+DISPLAY4:           0FF5 DEFINED AT LINE 9
+                    > USED AT LINE 636
+                    > USED AT LINE 640
+                    > USED AT LINE 688
+DISPLAY5:           0FF6 DEFINED AT LINE 10
+                    > USED AT LINE 485
+                    > USED AT LINE 658
+                    > USED AT LINE 686
+                    > USED AT LINE 774
+                    > USED AT LINE 797
+DISPLAY6:           0FF7 DEFINED AT LINE 11
+                    > USED AT LINE 484
+ADDRESS:            0FF7 DEFINED AT LINE 12
+                    > USED AT LINE 128
+                    > USED AT LINE 148
+                    > USED AT LINE 152
+                    > USED AT LINE 154
                     > USED AT LINE 156
-                    > USED AT LINE 281
-BEEP:               018E DEFINED AT LINE 308
-                    > USED AT LINE 126
+                    > USED AT LINE 158
+                    > USED AT LINE 160
+                    > USED AT LINE 178
+                    > USED AT LINE 1004
+MODE:               0FF9 DEFINED AT LINE 13
+                    > USED AT LINE 120
+                    > USED AT LINE 176
+                    > USED AT LINE 1006
+KEYFLAG:            0FFA DEFINED AT LINE 14
+                    > USED AT LINE 138
+                    > USED AT LINE 289
+                    > USED AT LINE 296
+                    > USED AT LINE 1007
+INV_SCORE:          0FFA DEFINED AT LINE 16
+                    > USED AT LINE 628
                     > USED AT LINE 674
-PLAYTONE:           0193 DEFINED AT LINE 313
-                    > USED AT LINE 359
-                    > USED AT LINE 1017
-                    > USED AT LINE 1020
-MTLOOP:             019B DEFINED AT LINE 318
-                    > USED AT LINE 323
-MTDELAY:            019E DEFINED AT LINE 320
-                    > USED AT LINE 320
-PLAYTUNE:           01B0 DEFINED AT LINE 334
-                    > USED AT LINE 84
-                    > USED AT LINE 343
-                    > USED AT LINE 921
-PTLOOP1:            01B4 DEFINED AT LINE 336
-                    > USED AT LINE 361
-                    > USED AT LINE 380
-TBLOOKUP:           01E3 DEFINED AT LINE 367
-                    > USED AT LINE 350
-                    > USED AT LINE 354
-                    > USED AT LINE 507
-PTSILENCE:          01E9 DEFINED AT LINE 372
-                    > USED AT LINE 345
-PTLOOP2:            01ED DEFINED AT LINE 374
-                    > USED AT LINE 377
-FREQWL:             01F8 DEFINED AT LINE 381
-                    > USED AT LINE 349
-FREQNC:             0210 DEFINED AT LINE 402
-                    > USED AT LINE 353
-TUNE1:              0230 DEFINED AT LINE 429
-                    > USED AT LINE 66
-SHOWTEXT:           0270 DEFINED AT LINE 481
-                    > USED AT LINE 505
-                    > USED AT LINE 815
-STXT1:              027D DEFINED AT LINE 487
-                    > USED AT LINE 489
-STXTLOOP:           0282 DEFINED AT LINE 490
-                    > USED AT LINE 516
-STXT2:              028A DEFINED AT LINE 494
-                    > USED AT LINE 498
-STXT3:              02A9 DEFINED AT LINE 511
-                    > USED AT LINE 515
-CHAR7SEGTBL:        02B3 DEFINED AT LINE 517
-                    > USED AT LINE 506
-WELCOME:            02D1 DEFINED AT LINE 547
-INVADERS:           0320 DEFINED AT LINE 632
-                    > USED AT LINE 40
-                    > USED AT LINE 685
-INV10:              0330 DEFINED AT LINE 640
-                    > USED AT LINE 642
-INV_LOOP:           0335 DEFINED AT LINE 643
-                    > USED AT LINE 673
-INV20:              0344 DEFINED AT LINE 650
-                    > USED AT LINE 654
-INV30:              0355 DEFINED AT LINE 660
-                    > USED AT LINE 672
-INV40:              0373 DEFINED AT LINE 674
-                    > USED AT LINE 645
-INV50:              037B DEFINED AT LINE 678
-                    > USED AT LINE 680
-INVKEYPRESS:        038E DEFINED AT LINE 686
-                    > USED AT LINE 669
-INV60:              039A DEFINED AT LINE 693
-                    > USED AT LINE 687
-INV65:              03A3 DEFINED AT LINE 697
-                    > USED AT LINE 706
-INV70:              03B1 DEFINED AT LINE 705
-                    > USED AT LINE 699
-TRI2SEG:            03B5 DEFINED AT LINE 710
+                    > USED AT LINE 694
+                    > USED AT LINE 697
+INV_GUN:            0FFB DEFINED AT LINE 17
+                    > USED AT LINE 629
                     > USED AT LINE 656
-                    > USED AT LINE 664
-NIMLOSE:            03BB DEFINED AT LINE 714
-                    > USED AT LINE 811
-NIMWIN:             03CC DEFINED AT LINE 731
-                    > USED AT LINE 813
-NIM:                03E0 DEFINED AT LINE 754
-                    > USED AT LINE 46
-                    > USED AT LINE 817
-NIMLOOP1:           03EE DEFINED AT LINE 761
-                    > USED AT LINE 763
-NIMLOOP2:           03F5 DEFINED AT LINE 765
-                    > USED AT LINE 769
-                    > USED AT LINE 806
-NIMLOOP3:           041D DEFINED AT LINE 784
-                    > USED AT LINE 786
-NIMLOOP4:           042C DEFINED AT LINE 792
-                    > USED AT LINE 794
-NIMRESUME:          0438 DEFINED AT LINE 799
-                    > USED AT LINE 810
-                    > USED AT LINE 830
-NIMRAND:            0448 DEFINED AT LINE 807
-                    > USED AT LINE 798
-NIMLOSER:           0450 DEFINED AT LINE 811
-                    > USED AT LINE 775
-                    > USED AT LINE 776
-NIMWINNER:          0456 DEFINED AT LINE 813
-NIMTEXT:            0459 DEFINED AT LINE 814
-                    > USED AT LINE 812
-NIMDISPLAY:         0466 DEFINED AT LINE 821
-                    > USED AT LINE 765
+                    > USED AT LINE 681
+                    > USED AT LINE 683
+PORTKEYB:           0000 DEFINED AT LINE 18
+PORTDIGIT:          0001 DEFINED AT LINE 19
+                    > USED AT LINE 244
+                    > USED AT LINE 250
+                    > USED AT LINE 311
+PORTSPKR:           0001 DEFINED AT LINE 20
+PORTSEGS:           0002 DEFINED AT LINE 21
+                    > USED AT LINE 241
+                    > USED AT LINE 309
+PORTSLOW:           0003 DEFINED AT LINE 22
+PORTFAST:           0004 DEFINED AT LINE 23
+SLOWSEQ:            0800 DEFINED AT LINE 24
+FASTSEQ:            0B00 DEFINED AT LINE 25
+ENDOFSEQ:           00FF DEFINED AT LINE 26
+REPEATTEXT:         001E DEFINED AT LINE 27
+ENDOFTEXT:          001F DEFINED AT LINE 28
+REPEATTUNE:         001E DEFINED AT LINE 29
+ENDOFTUNE:          001F DEFINED AT LINE 30
+NIMMATCHES:         0FFA DEFINED AT LINE 31
+                    > USED AT LINE 750
+                    > USED AT LINE 766
+                    > USED AT LINE 772
                     > USED AT LINE 780
-NIMADJUST:          0476 DEFINED AT LINE 829
-                    > USED AT LINE 809
-LUNAWIN:            047B DEFINED AT LINE 832
-                    > USED AT LINE 919
-LUNALOSE:           0484 DEFINED AT LINE 841
-                    > USED AT LINE 916
-LUNALANDER:         0490 DEFINED AT LINE 859
-                    > USED AT LINE 52
-                    > USED AT LINE 923
-LUNA10:             04AB DEFINED AT LINE 871
-LUNA15:             04B0 DEFINED AT LINE 874
-                    > USED AT LINE 903
-LUNA20:             04B2 DEFINED AT LINE 875
-                    > USED AT LINE 889
-LUNAKPRESS:         04F3 DEFINED AT LINE 905
-                    > USED AT LINE 887
-LLOSE:              0508 DEFINED AT LINE 916
-                    > USED AT LINE 901
-LWIN:               0511 DEFINED AT LINE 919
-                    > USED AT LINE 899
-LUNAPLAYTUNE:       0514 DEFINED AT LINE 920
-                    > USED AT LINE 918
-TUNE2:              0530 DEFINED AT LINE 939
+                    > USED AT LINE 793
+                    > USED AT LINE 796
+                    > USED AT LINE 815
+STARTTUNE:          0041 DEFINED AT LINE 76
+                    > USED AT LINE 66
                     > USED AT LINE 70
-STARTMON2:          0580 DEFINED AT LINE 1008
-                    > USED AT LINE 1082
-STARTMON:           05F0 DEFINED AT LINE 1064
-                    > USED AT LINE 34
+NMINT:              0066 DEFINED AT LINE 111
+WRITEDISP2:         006D DEFINED AT LINE 117
+                    > USED AT LINE 186
+ADDRKEY:            0088 DEFINED AT LINE 128
+                    > USED AT LINE 126
+WRITEDISP3:         0096 DEFINED AT LINE 134
+                    > USED AT LINE 122
+DATAKEY:            00B7 DEFINED AT LINE 148
+                    > USED AT LINE 136
+GOADDR:             00C2 DEFINED AT LINE 152
+                    > USED AT LINE 143
+DECADDR:            00C6 DEFINED AT LINE 154
+                    > USED AT LINE 145
+INCADDR:            00D0 DEFINED AT LINE 158
+                    > USED AT LINE 147
+ADDRDISP:           00DA DEFINED AT LINE 162
+                    > USED AT LINE 133
+                    > USED AT LINE 141
+DATADISP:           00E3 DEFINED AT LINE 166
+                    > USED AT LINE 127
+                    > USED AT LINE 151
+                    > USED AT LINE 157
+                    > USED AT LINE 161
+                    > USED AT LINE 1014
+WRITEDISP:          00EA DEFINED AT LINE 176
+                    > USED AT LINE 165
+DPLOOP:             00FA DEFINED AT LINE 183
+                    > USED AT LINE 185
+WRITEADDR:          0102 DEFINED AT LINE 189
+                    > USED AT LINE 179
+WRITEDATA:          010E DEFINED AT LINE 197
+                    > USED AT LINE 181
+WRITEHEX:           0115 DEFINED AT LINE 203
+                    > USED AT LINE 191
+                    > USED AT LINE 193
+                    > USED AT LINE 198
+                    > USED AT LINE 676
+                    > USED AT LINE 816
+                    > USED AT LINE 870
+                    > USED AT LINE 874
+HEX2SEGS:           0126 DEFINED AT LINE 218
+                    > USED AT LINE 204
+                    > USED AT LINE 212
+                    > USED AT LINE 704
+                    > USED AT LINE 819
+GETKEY:             0131 DEFINED AT LINE 229
+                    > USED AT LINE 118
+                    > USED AT LINE 235
+                    > USED AT LINE 677
+                    > USED AT LINE 759
+                    > USED AT LINE 809
+                    > USED AT LINE 915
+SCANDISP:           0140 DEFINED AT LINE 238
+                    > USED AT LINE 231
+                    > USED AT LINE 505
+                    > USED AT LINE 659
+                    > USED AT LINE 777
+                    > USED AT LINE 877
+L145:               0145 DEFINED AT LINE 240
+                    > USED AT LINE 251
+SDDELAY:            0154 DEFINED AT LINE 248
+                    > USED AT LINE 249
+HEXSEGTBL:          015F DEFINED AT LINE 254
+                    > USED AT LINE 219
+GETADDRKEY:         016F DEFINED AT LINE 274
+                    > USED AT LINE 129
+GETDATAKEY:         017B DEFINED AT LINE 287
+                    > USED AT LINE 149
+                    > USED AT LINE 274
+BEEP:               018E DEFINED AT LINE 301
+                    > USED AT LINE 119
+                    > USED AT LINE 667
+PLAYTONE:           0193 DEFINED AT LINE 306
+                    > USED AT LINE 352
+                    > USED AT LINE 1010
+                    > USED AT LINE 1013
+MTLOOP:             019B DEFINED AT LINE 311
+                    > USED AT LINE 316
+MTDELAY:            019E DEFINED AT LINE 313
+                    > USED AT LINE 313
+PLAYTUNE:           01B0 DEFINED AT LINE 327
+                    > USED AT LINE 77
+                    > USED AT LINE 336
+                    > USED AT LINE 914
+PTLOOP1:            01B4 DEFINED AT LINE 329
+                    > USED AT LINE 354
+                    > USED AT LINE 373
+TBLOOKUP:           01E3 DEFINED AT LINE 360
+                    > USED AT LINE 343
+                    > USED AT LINE 347
+                    > USED AT LINE 500
+PTSILENCE:          01E9 DEFINED AT LINE 365
+                    > USED AT LINE 338
+PTLOOP2:            01ED DEFINED AT LINE 367
+                    > USED AT LINE 370
+FREQWL:             01F8 DEFINED AT LINE 374
+                    > USED AT LINE 342
+FREQNC:             0210 DEFINED AT LINE 395
+                    > USED AT LINE 346
+TUNE1:              0230 DEFINED AT LINE 422
+                    > USED AT LINE 65
+SHOWTEXT:           0270 DEFINED AT LINE 474
+                    > USED AT LINE 498
+                    > USED AT LINE 808
+STXT1:              027D DEFINED AT LINE 480
+                    > USED AT LINE 482
+STXTLOOP:           0282 DEFINED AT LINE 483
+                    > USED AT LINE 509
+STXT2:              028A DEFINED AT LINE 487
+                    > USED AT LINE 491
+STXT3:              02A9 DEFINED AT LINE 504
+                    > USED AT LINE 508
+CHAR7SEGTBL:        02B3 DEFINED AT LINE 510
+                    > USED AT LINE 499
+WELCOME:            02D1 DEFINED AT LINE 540
+INVADERS:           0320 DEFINED AT LINE 625
+                    > USED AT LINE 39
+                    > USED AT LINE 678
+INV10:              0330 DEFINED AT LINE 633
+                    > USED AT LINE 635
+INV_LOOP:           0335 DEFINED AT LINE 636
+                    > USED AT LINE 666
+INV20:              0344 DEFINED AT LINE 643
+                    > USED AT LINE 647
+INV30:              0355 DEFINED AT LINE 653
+                    > USED AT LINE 665
+INV40:              0373 DEFINED AT LINE 667
+                    > USED AT LINE 638
+INV50:              037B DEFINED AT LINE 671
+                    > USED AT LINE 673
+INVKEYPRESS:        038E DEFINED AT LINE 679
+                    > USED AT LINE 662
+INV60:              039A DEFINED AT LINE 686
+                    > USED AT LINE 680
+INV65:              03A3 DEFINED AT LINE 690
+                    > USED AT LINE 699
+INV70:              03B1 DEFINED AT LINE 698
+                    > USED AT LINE 692
+TRI2SEG:            03B5 DEFINED AT LINE 703
+                    > USED AT LINE 649
+                    > USED AT LINE 657
+NIMLOSE:            03BB DEFINED AT LINE 707
+                    > USED AT LINE 804
+NIMWIN:             03CC DEFINED AT LINE 724
+                    > USED AT LINE 806
+NIM:                03E0 DEFINED AT LINE 747
+                    > USED AT LINE 45
+                    > USED AT LINE 810
+NIMLOOP1:           03EE DEFINED AT LINE 754
+                    > USED AT LINE 756
+NIMLOOP2:           03F5 DEFINED AT LINE 758
+                    > USED AT LINE 762
+                    > USED AT LINE 799
+NIMLOOP3:           041D DEFINED AT LINE 777
+                    > USED AT LINE 779
+NIMLOOP4:           042C DEFINED AT LINE 785
+                    > USED AT LINE 787
+NIMRESUME:          0438 DEFINED AT LINE 792
+                    > USED AT LINE 803
+                    > USED AT LINE 823
+NIMRAND:            0448 DEFINED AT LINE 800
+                    > USED AT LINE 791
+NIMLOSER:           0450 DEFINED AT LINE 804
+                    > USED AT LINE 768
+                    > USED AT LINE 769
+NIMWINNER:          0456 DEFINED AT LINE 806
+NIMTEXT:            0459 DEFINED AT LINE 807
+                    > USED AT LINE 805
+NIMDISPLAY:         0466 DEFINED AT LINE 814
+                    > USED AT LINE 758
+                    > USED AT LINE 773
+NIMADJUST:          0476 DEFINED AT LINE 822
+                    > USED AT LINE 802
+LUNAWIN:            047B DEFINED AT LINE 825
+                    > USED AT LINE 912
+LUNALOSE:           0484 DEFINED AT LINE 834
+                    > USED AT LINE 909
+LUNALANDER:         0490 DEFINED AT LINE 852
+                    > USED AT LINE 51
+                    > USED AT LINE 916
+LUNA10:             04AB DEFINED AT LINE 864
+LUNA15:             04B0 DEFINED AT LINE 867
+                    > USED AT LINE 896
+LUNA20:             04B2 DEFINED AT LINE 868
+                    > USED AT LINE 882
+LUNAKPRESS:         04F3 DEFINED AT LINE 898
+                    > USED AT LINE 880
+LLOSE:              0508 DEFINED AT LINE 909
+                    > USED AT LINE 894
+LWIN:               0511 DEFINED AT LINE 912
+                    > USED AT LINE 892
+LUNAPLAYTUNE:       0514 DEFINED AT LINE 913
+                    > USED AT LINE 911
+TUNE2:              0530 DEFINED AT LINE 932
+                    > USED AT LINE 69
+STARTMON:           0580 DEFINED AT LINE 1001
+                    > USED AT LINE 33
