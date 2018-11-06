@@ -64,7 +64,7 @@ by Jim Robertson and Mike Donaghy
 
 Includes:
 original BIN binary of ROM
-Listing in Z80 ASM format
+Listing in Z80 ASM format (needs more work)
 Fully commented source listing by Jim Roberton (PDF)
 
 Licensed up the MIT license
