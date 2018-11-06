@@ -1,3 +1,7 @@
+;
+; JROM TEC-1 Monitor ROM written by Jim Robertson
+; Released under the MIT LICENSE
+;
             LD      (0x086e),hl
             LD      hl,(0x0828)
             JR      0x006b

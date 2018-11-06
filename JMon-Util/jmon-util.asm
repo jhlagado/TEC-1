@@ -1,3 +1,7 @@
+;
+; TEC-1 Disassembler ROM written by Jim Robertson and Mike Donaghy
+; Released under the MIT license
+;
             JP      0x3b00
             RST     0x38
             RST     0x38
