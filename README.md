@@ -7,7 +7,7 @@ John Hardy and Ken Stone.
 Also the printed circuit artwork by Ken Stone which was based on my original prototype.
 
 Updated with Jim Robertson's enhanced and comprehensive JMON monitor ROM
-and also the "Disassembler" / Utilities ROM also written by Jim in collaboration with Mike Donaghy
+and also the Utilities / Disassembler ROM also written by Jim in collaboration with Mike Donaghy
 
 ## Mon-1
 by John Hardy
