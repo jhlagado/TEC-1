@@ -930,7 +930,7 @@
 052D   FF                           DB      0xFF
 052E   FF                           DB      0xFF
 052F   FF                           DB      0xFF
-0530   0B           TUNE2:          DB      0x0B
+0530   0B           TUNE2:          DB      0x0B            ;Bealach An Doirín
 0531   0A                           DB      0x0A
 0532   08                           DB      0x08
 0533   0A                           DB      0x0A
@@ -1000,7 +1000,7 @@
 057E   FF                           DB      0xFF
 057F   FF                           DB      0xFF
 0580   21 00 08     STARTMON:       LD      hl,STARTRAM
-0583   31 F0 0F                     LD      sp,STARTSTACK   ;set stack 
+0583   31 F0 0F                     LD      sp,STARTSTACK   ;set stack
 0586   DD 21 F1 0F                  LD      ix,DISPLAY      ;ix = DISPLAY
 058A   22 F7 0F                     LD      (ADDRESS),hl    ;address_ptr = STARTRAM
 058D   AF                           XOR     a

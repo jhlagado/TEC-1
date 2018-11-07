@@ -936,7 +936,7 @@ LUNAPLAYTUNE:   LD      (STARTRAM),de   ;store starting address in RAM
                 DB      0xFF
                 DB      0xFF
                 DB      0xFF
-TUNE2:          DB      0x0B
+TUNE2:          DB      0x0B            ; Bealach An Doirín
                 DB      0x0A
                 DB      0x08
                 DB      0x0A
