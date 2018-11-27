@@ -9,6 +9,8 @@ Also the printed circuit artwork by Ken Stone which was based on my original pro
 Updated with Jim Robertson's enhanced and comprehensive JMON monitor ROM
 and also the Utilities / Disassembler ROM also written by Jim in collaboration with Mike Donaghy
 
+![The TEC-1 Prototype](TEC-1-prototype.jpg)
+
 ## Mon-1
 by John Hardy
 The orginal ROM that shipped with the TEC-1 in 1983
@@ -77,3 +79,9 @@ Included:
 - Fully commented source listing by Jim Roberton (PDF)
 
 Licensed under the MIT license
+
+## PCB
+The printed circuit board is by Ken Stone
+- It is in the Protel Autotrax format
+
+Licensed under the GPL public license v3.0
