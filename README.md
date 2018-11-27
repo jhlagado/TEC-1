@@ -77,3 +77,9 @@ Included:
 - Fully commented source listing by Jim Roberton (PDF)
 
 Licensed under the MIT license
+
+## PCB
+The printed circuit board is by Ken Stone
+- It is in the Protel Autotrax format
+
+Licensed under the GPL public license v3.0
