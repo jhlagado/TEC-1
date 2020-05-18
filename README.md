@@ -1,7 +1,7 @@
 # TEC-1
 
-Things related to the TEC-1 computer kit which I designed in 1982 with Ken Stone
-and published in Issue 10 of Talking Electronics in early 1983. In particular, the ROMs written by
+Things related to the TEC-1 computer kit which I designed with Ken Stone
+and published in Issue 10 of Talking Electronics. In particular, the ROMs written by
 John Hardy and Ken Stone.
 
 Also the printed circuit artwork by Ken Stone which was based on my original prototype.
